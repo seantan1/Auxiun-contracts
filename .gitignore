@@ -1,0 +1,6 @@
+# Dependencies
+/node_modules
+package-lock.json
+.secret
+# Misc
+.DS_Store
