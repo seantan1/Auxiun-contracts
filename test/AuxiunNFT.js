@@ -3,7 +3,6 @@ const AuxiunNFT = artifacts.require("AuxiunNFT")
 contract("AuxiunNFT", (accounts) => {
 
     let contractInstance;
-    let [lyra, will] = accounts;
 
     beforeEach(async () => {
         contractInstance = await AuxiunNFT.new();
@@ -13,43 +12,45 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.kill();
     });
 
+    /* Expected Result: Transaction should be successful */
     it("Should set the baseURI.", async () => {
+        // Set up
         let baseURI = "https://auxiun-nft-market.com";
+
+        // Test setBaseURI()
         const result = await contractInstance.setBaseURI(baseURI);
         assert.equal(result.receipt.status, true);
     })
 
+    /* Expected Result: Transaction should be successful */
     it("Should mint the NFT", async () => {
-        // Need game_id
+        // Set up
         let gameId = "bsg_escape_from_tarkov";
-
-        // Need item_id
         let itemId = "btc";
 
-        // Mint the NFT
+        // Test mint()
         const result = await contractInstance.mint(gameId, itemId);
         assert.equal(result.receipt.status, true);
     })
 
+
+    /* 
+        Expected Result: TokenURI should return
+        a URI structured like the following -
+        "<baseURI> + <gameId> + / + <itemId>"
+    */
     it("Should return a token URI.", async () => {
+
+        // Set up
         let baseURI = "https://auxiun-nft-market.com/";
-
-        // Need game_id
         let gameId = "bsg_escape_from_tarkov";
-
-        // Need item_id
         let itemId = "btc";
-
-        // Need to set baseURI
         await contractInstance.setBaseURI(baseURI)
-
-        // Mint the NFT
         await contractInstance.mint(gameId, itemId);
 
-        // Collect result
+        // Test tokenURI()
         const result = await contractInstance.tokenURI(0);
         const expected = String(baseURI+gameId+"/"+itemId);
-
         assert.equal(result, expected);
     })
 })
