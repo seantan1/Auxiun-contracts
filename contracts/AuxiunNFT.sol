@@ -77,4 +77,8 @@ contract AuxiunNFT is Ownable, ERC721 {
         for (uint i = 0; i < _be.length; i++) babcde[k++] = _be[i];
         return string(babcde);
     }
+
+    function kill() public onlyOwner {
+        selfdestruct(payable(owner()));
+    }
 }
