@@ -1,7 +1,7 @@
 const AuxiunNFT = artifacts.require("AuxiunNFT")
+const utils = require("./helpers/utils")
 
-contract("AuxiunNFT", (accounts) => {
-
+contract("AuxiunNFT", () => {
     let contractInstance;
 
     beforeEach(async () => {
@@ -13,7 +13,7 @@ contract("AuxiunNFT", (accounts) => {
     });
 
     /* Expected Result: Transaction should be successful */
-    it("Should set the baseURI.", async () => {
+    it("should set the baseURI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com";
 
@@ -23,7 +23,7 @@ contract("AuxiunNFT", (accounts) => {
     })
 
     /* Expected Result: Transaction should be successful */
-    it("Should mint the NFT", async () => {
+    it("should mint an asset, given a gameId and itemId.", async () => {
         // Set up
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
@@ -39,8 +39,7 @@ contract("AuxiunNFT", (accounts) => {
         a URI structured like the following -
         "<baseURI> + <gameId> + / + <itemId>"
     */
-    it("Should return a token URI.", async () => {
-
+    it("should return a token URI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com/";
         let gameId = "bsg_escape_from_tarkov";
@@ -53,4 +52,19 @@ contract("AuxiunNFT", (accounts) => {
         const expected = String(baseURI+gameId+"/"+itemId);
         assert.equal(result, expected);
     })
+
+    /* 
+        Expected Result: TokenURI() should throw an error after 
+        attempting to get a token URI from a non-existant asset
+    */
+    it("should throw an error after attempting to access a non-existent asset.", async () => {
+           // Set up
+           let baseURI = "https://auxiun-nft-market.com/";
+           await contractInstance.setBaseURI(baseURI)
+
+           // Test tokenURI()
+           await utils.throws(contractInstance.tokenURI(5))
+    })
+
+
 })
