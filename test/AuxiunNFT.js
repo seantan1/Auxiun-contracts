@@ -12,7 +12,10 @@ contract("AuxiunNFT", () => {
         await contractInstance.kill();
     });
 
-    /* Expected Result: Transaction should be successful */
+    /* 
+        Expected Result: Transaction should be successful 
+        i.e receipt status == true.
+    */
     it("should set the baseURI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com";
@@ -22,7 +25,10 @@ contract("AuxiunNFT", () => {
         assert.equal(result.receipt.status, true);
     })
 
-    /* Expected Result: Transaction should be successful */
+    /* 
+        Expected Result: Transaction should be successful 
+        i.e receipt status == true.
+    */
     it("should mint an asset, given a gameId and itemId.", async () => {
         // Set up
         let gameId = "bsg_escape_from_tarkov";
@@ -37,9 +43,9 @@ contract("AuxiunNFT", () => {
     /* 
         Expected Result: TokenURI should return
         a URI structured like the following -
-        "<baseURI> + <gameId> + / + <itemId>"
+        "<baseURI> + <gameId> + / + <itemId>".
     */
-    it("should return a token URI.", async () => {
+    it("should return an appropriate token URI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com/";
         let gameId = "bsg_escape_from_tarkov";
@@ -55,7 +61,7 @@ contract("AuxiunNFT", () => {
 
     /* 
         Expected Result: TokenURI() should throw an error after 
-        attempting to get a token URI from a non-existant asset
+        attempting to get a token URI from a non-existant asset.
     */
     it("should throw an error after attempting to access a non-existent asset.", async () => {
            // Set up
