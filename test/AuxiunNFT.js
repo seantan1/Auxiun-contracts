@@ -1,12 +1,12 @@
-const AuxinNFT = artifacts.require("AuxinNFT")
+const AuxiunNFT = artifacts.require("AuxiunNFT")
 
-contract("AuxinNFT", (accounts) => {
+contract("AuxiunNFT", (accounts) => {
 
     let contractInstance;
     let [lyra, will] = accounts;
 
     beforeEach(async () => {
-        contractInstance = await AuxinNFT.new();
+        contractInstance = await AuxiunNFT.new();
     })
     afterEach(async () => {
         await contractInstance.kill();
@@ -15,7 +15,7 @@ contract("AuxinNFT", (accounts) => {
     // it("Should increment the token counter and mint the NFT", () => {
     // })
 
-    it("Should return a token URI.", () => {
+    it("Should return a token URI.", async () => {
         let baseURI = "https://auxiun-nft-market.com";
 
         // Need game_id
