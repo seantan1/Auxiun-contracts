@@ -20,19 +20,19 @@ contract("AuxiunNFT", (accounts) => {
     })
 
     it("Should mint the NFT", async () => {
-            // Need game_id
-            let gameId = "bsg_escape_from_tarkov";
+        // Need game_id
+        let gameId = "bsg_escape_from_tarkov";
 
-            // Need item_id
-            let itemId = "btc";
+        // Need item_id
+        let itemId = "btc";
 
-            // Mint the NFT
-            const result = await contractInstance.mint(gameId, itemId);
-            assert.equal(result.receipt.status, true);
+        // Mint the NFT
+        const result = await contractInstance.mint(gameId, itemId);
+        assert.equal(result.receipt.status, true);
     })
 
     it("Should return a token URI.", async () => {
-        let baseURI = "https://auxiun-nft-market.com";
+        let baseURI = "https://auxiun-nft-market.com/";
 
         // Need game_id
         let gameId = "bsg_escape_from_tarkov";
@@ -41,14 +41,15 @@ contract("AuxiunNFT", (accounts) => {
         let itemId = "btc";
 
         // Need to set baseURI
-        contractInstance.setBaseURI(baseURI)
+        await contractInstance.setBaseURI(baseURI)
 
         // Mint the NFT
-        contractInstance.mint(gameId, itemId);
+        await contractInstance.mint(gameId, itemId);
 
         // Collect result
         const result = await contractInstance.tokenURI(0);
-        const expected = str(baseURI+gameId+itemId);
+        const expected = String(baseURI+gameId+"/"+itemId);
+
         assert.equal(result, expected);
     })
 })
