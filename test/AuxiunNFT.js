@@ -16,7 +16,7 @@ contract("AuxinNFT", (accounts) => {
     // })
 
     it("Should return a token URI.", () => {
-        let baseURI = "https://bsg.com";
+        let baseURI = "https://auxiun-nft-market.com";
 
         // Need game_id
         let gameId = "bsg_escape_from_tarkov";
@@ -24,8 +24,8 @@ contract("AuxinNFT", (accounts) => {
         // Need item_id
         let itemId = "btc";
 
-        // Need baseURI
-        contractInstance.setBaseURI()
+        // Need to set baseURI
+        contractInstance.setBaseURI(baseURI)
 
         // Mint the NFT
         contractInstance.mint(gameId, itemId);
