@@ -11,14 +11,22 @@ contract AuxiunNFT is Ownable, ERC721 {
         string item_id;
     }
 
+    // List of NFT for sale
+    Metadata[] public tokensForSale;
+
     // mapping of tokenId to metadata
     mapping(uint256 => Metadata) id_to_metadata;
+
+    // mapping of NFT tokenURI to Owner
+    mapping(uint256 => address) tokenURI_to_owner;
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
 
     // Used as tokenId for a newly minted token and increases by 1
     uint256 private tokenIdCounter = 0;
+
+    
 
     constructor() ERC721("AuxiunNFT", "AUXN") {
         // TODO: Setup database api server and set the link here, remember to add the "/" at the end of the uri
@@ -76,6 +84,11 @@ contract AuxiunNFT is Ownable, ERC721 {
         for (uint i = 0; i < _bd.length; i++) babcde[k++] = _bd[i];
         for (uint i = 0; i < _be.length; i++) babcde[k++] = _be[i];
         return string(babcde);
+    }
+
+
+    function listForSale() external onlyOwner() {
+
     }
 
     function kill() public onlyOwner {
