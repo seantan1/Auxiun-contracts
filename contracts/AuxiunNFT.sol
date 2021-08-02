@@ -103,6 +103,7 @@ contract AuxiunNFT is Ownable, ERC721 {
         _;
     }
 
+    // consider changing Token -> NFT, eg listNFTOnMarket, removeNFTFromMarket, purchaseNFT
     function listTokenOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price);
         itemsOnMarket++;
@@ -115,9 +116,10 @@ contract AuxiunNFT is Ownable, ERC721 {
 
     function purchaseToken(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
-        require(id_to_marketDetails[tokenId].price == amount);
+        require(id_to_marketDetails[tokenId].price == amount); // can consider <= instead cuz user might accidentally send more, then refund buyer if required
         id_to_owner[tokenId] = to;
         payable(from).transfer(amount);
+        // you haven't called the transfer function yet (should be here), remember to make sure this contract has the allowance to execute the transfer 
         emit Transfer(from, to, tokenId);
     }
 
