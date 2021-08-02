@@ -123,6 +123,9 @@ contract AuxiunNFT is Ownable, ERC721 {
         emit Transfer(from, to, tokenId);
     }
 
+    // TODO: 
+    // 1. function that loops through id_to_marketDetails, return the tokenId and tokenURI and if possible the token's owner too
+
     function kill() public onlyOwner {
         selfdestruct(payable(owner()));
     }
