@@ -117,11 +117,17 @@ contract AuxiunNFT is Ownable, ERC721 {
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price);
         itemsOnMarket++;
+        tokenIdsOnMarket.push(tokenId);
     }
 
     function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(false, 0);
         itemsOnMarket--;
+        // removeIdOnMarket(tokenId);
+    }
+
+    function removeIdOnMarket(uint256 tokenId) internal {
+        
     }
 
     function purchaseNFT(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
@@ -133,6 +139,8 @@ contract AuxiunNFT is Ownable, ERC721 {
         emit Transfer(from, to, tokenId);
     }
 
+
+
     // TODO: 
     // 1. function that loops through id_to_marketDetails, return the tokenId and tokenURI and if possible the token's owner too
     /* 
@@ -140,8 +148,7 @@ contract AuxiunNFT is Ownable, ERC721 {
 
         OR
 
-        Keep track of the NFTs with an array of tokenIds (Wll need to create a function to remove items) 
-    
+        Keep track of the NFTs with an array of tokenIds (Will need to create a function to remove items) 
     */
   
 
