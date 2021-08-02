@@ -11,14 +11,19 @@ contract AuxiunNFT is Ownable, ERC721 {
         string item_id;
     }
 
-    // List of NFT for sale
-    Metadata[] public tokensForSale;
+    struct MarketDetails {
+        bool forSale;
+        uint256 price;
+    }
+
+    // mapping of tokenId to market details
+    mapping(uint256 => MarketDetails) tokenId_to_marketDetails;
 
     // mapping of tokenId to metadata
     mapping(uint256 => Metadata) id_to_metadata;
 
-    // mapping of NFT tokenURI to Owner
-    mapping(uint256 => address) tokenURI_to_owner;
+    // mapping of tokenId to Owner
+    mapping(uint256 => address) id_to_owner;
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
@@ -26,8 +31,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     // Used as tokenId for a newly minted token and increases by 1
     uint256 private tokenIdCounter = 0;
 
-    
-
+ 
     constructor() ERC721("AuxiunNFT", "AUXN") {
         // TODO: Setup database api server and set the link here, remember to add the "/" at the end of the uri
         baseURI = "https://todo/";
@@ -86,8 +90,29 @@ contract AuxiunNFT is Ownable, ERC721 {
         return string(babcde);
     }
 
+    modifier tokenExists(uint256 tokenId) {
+        require(_exists(tokenId));
+        _;
+    }
 
-    function listForSale() external onlyOwner() {
+    modifier belongsToSender(uint256 tokenId){
+        require(id_to_owner[tokenId] == msg.sender);
+        _;
+    }
+
+    function listTokenForSale(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
+        tokenId_to_marketDetails[tokenId] = MarketDetails(true, price);
+    }
+
+    function removeTokenFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
+        tokenId_to_marketDetails[tokenId] = MarketDetails(false, 0);
+    }
+
+    function purchaseToken(uint256 tokenId, uint256 price) external {
+
+    }
+
+    function getTokensForSale() external {
 
     }
 
