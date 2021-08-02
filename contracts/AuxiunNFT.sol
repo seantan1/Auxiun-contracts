@@ -17,7 +17,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     // mapping of tokenId to market details
-    mapping(uint256 => MarketDetails) tokenId_to_marketDetails;
+    mapping(uint256 => MarketDetails) id_to_marketDetails;
 
     // mapping of tokenId to metadata
     mapping(uint256 => Metadata) id_to_metadata;
@@ -30,6 +30,9 @@ contract AuxiunNFT is Ownable, ERC721 {
 
     // Used as tokenId for a newly minted token and increases by 1
     uint256 private tokenIdCounter = 0;
+
+    // Number of NFTs on market (Maybe for future use)
+    uint256 itemsOnMarket = 0;
 
  
     constructor() ERC721("AuxiunNFT", "AUXN") {
@@ -100,20 +103,22 @@ contract AuxiunNFT is Ownable, ERC721 {
         _;
     }
 
-    function listTokenForSale(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
-        tokenId_to_marketDetails[tokenId] = MarketDetails(true, price);
+    function listTokenOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
+        id_to_marketDetails[tokenId] = MarketDetails(true, price);
+        itemsOnMarket++;
     }
 
     function removeTokenFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
-        tokenId_to_marketDetails[tokenId] = MarketDetails(false, 0);
+        id_to_marketDetails[tokenId] = MarketDetails(false, 0);
+        itemsOnMarket--;
     }
 
-    function purchaseToken(uint256 tokenId, uint256 price) external {
-
-    }
-
-    function getTokensForSale() external {
-
+    function purchaseToken(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
+        require(id_to_marketDetails[tokenId].forSale);
+        require(id_to_marketDetails[tokenId].price == amount);
+        id_to_owner[tokenId] = to;
+        payable(from).transfer(amount);
+        emit Transfer(from, to, tokenId);
     }
 
     function kill() public onlyOwner {
