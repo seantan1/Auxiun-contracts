@@ -117,7 +117,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price);
         itemsOnMarket++;
-        tokenIdsOnMarket.push(tokenId);
+        // tokenIdsOnMarket.push(tokenId);
     }
 
     function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
