@@ -16,6 +16,14 @@ contract AuxiunNFT is Ownable, ERC721 {
         uint256 price;
     }
 
+    struct NFTDetails {
+        address seller;
+        uint256 tokenId;
+        uint256 price;
+        bool forSale;
+        string tokenURI;
+    }
+
     // mapping of tokenId to market details
     mapping(uint256 => MarketDetails) id_to_marketDetails;
 
@@ -33,6 +41,9 @@ contract AuxiunNFT is Ownable, ERC721 {
 
     // Number of NFTs on market (Maybe for future use)
     uint256 itemsOnMarket = 0;
+
+    // Keeping track of the tokenIds put on the market
+    uint256[] tokenIdsOnMarket;
 
  
     constructor() ERC721("AuxiunNFT", "AUXN") {
@@ -103,28 +114,36 @@ contract AuxiunNFT is Ownable, ERC721 {
         _;
     }
 
-    // consider changing Token -> NFT, eg listNFTOnMarket, removeNFTFromMarket, purchaseNFT
-    function listTokenOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
+    function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price);
         itemsOnMarket++;
     }
 
-    function removeTokenFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
+    function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(false, 0);
         itemsOnMarket--;
     }
 
-    function purchaseToken(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
+    function purchaseNFT(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
-        require(id_to_marketDetails[tokenId].price == amount); // can consider <= instead cuz user might accidentally send more, then refund buyer if required
+        require(id_to_marketDetails[tokenId].price <= amount); 
         id_to_owner[tokenId] = to;
         payable(from).transfer(amount);
-        // you haven't called the transfer function yet (should be here), remember to make sure this contract has the allowance to execute the transfer 
+        safeTransferFrom(from, to, tokenId);
         emit Transfer(from, to, tokenId);
     }
 
     // TODO: 
     // 1. function that loops through id_to_marketDetails, return the tokenId and tokenURI and if possible the token's owner too
+    /* 
+        Can get the NFTS on the market by going through every tokenId that has existed and check if forSale is true
+
+        OR
+
+        Keep track of the NFTs with an array of tokenIds (Wll need to create a function to remove items) 
+    
+    */
+  
 
     function kill() public onlyOwner {
         selfdestruct(payable(owner()));
