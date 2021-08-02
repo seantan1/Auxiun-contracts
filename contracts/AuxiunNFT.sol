@@ -144,11 +144,13 @@ contract AuxiunNFT is Ownable, ERC721 {
     // TODO: 
     // 1. function that loops through id_to_marketDetails, return the tokenId and tokenURI and if possible the token's owner too
     /* 
-        Can get the NFTS on the market by going through every tokenId that has existed and check if forSale is true
+        Can get the NFTS on the market by going through every tokenId that has existed 
+        and check if forSale in id_to_marketDetailsis "true".
 
         OR
 
-        Keep track of the NFTs with an array of tokenIds (Will need to create a function to remove items) 
+        Keep track of the NFTs with an array of tokenIds (Will need to create a function to remove items).
+        We can continue to use id_to_marketDetails to get information about the token.
     */
   
 
