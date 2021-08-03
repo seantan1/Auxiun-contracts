@@ -16,13 +16,6 @@ contract AuxiunNFT is Ownable, ERC721 {
         uint256 price;
     }
 
-    struct NFTDetails {
-        address seller;
-        uint256 tokenId;
-        uint256 price;
-        bool forSale;
-        string tokenURI;
-    }
 
     // mapping of tokenId to market details
     mapping(uint256 => MarketDetails) id_to_marketDetails;
@@ -104,6 +97,9 @@ contract AuxiunNFT is Ownable, ERC721 {
         return string(babcde);
     }
 
+
+    // Modifers
+
     modifier tokenExists(uint256 tokenId) {
         require(_exists(tokenId));
         _;
@@ -114,6 +110,37 @@ contract AuxiunNFT is Ownable, ERC721 {
         _;
     }
 
+
+
+
+    // Helper Functions for NFTs on the market.
+
+    function _removeNFTfromMarket(uint tokenId) private tokenExists(tokenId) {
+        id_to_marketDetails[tokenId] = MarketDetails(false, 0);
+        itemsOnMarket--;
+        // _removeIdOnMarket(tokenId);
+    }
+
+    function _removeIdOnMarket(uint256 tokenId) private {
+        int index = _getIndexOfTokenId(tokenId);
+        require(index > -1, "No tokenId found on the market.");
+
+        tokenIdsOnMarket[uint256(index)] = tokenIdsOnMarket[tokenIdsOnMarket.length -1];
+        tokenIdsOnMarket.pop();
+    }
+
+    function _getIndexOfTokenId(uint256 tokenId) private view returns (int256) {
+        for(uint256 i = 0; i < tokenIdsOnMarket.length; i++){
+            if(tokenId == tokenIdsOnMarket[i]){
+                return int(i);
+            }
+        }
+        return -1;
+    }   
+
+  
+    // Functions for market place interactions.
+    
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price);
         itemsOnMarket++;
@@ -121,19 +148,15 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
-        id_to_marketDetails[tokenId] = MarketDetails(false, 0);
-        itemsOnMarket--;
-        // removeIdOnMarket(tokenId);
+        _removeNFTfromMarket(tokenId);
     }
 
-    function removeIdOnMarket(uint256 tokenId) internal {
-        
-    }
 
     function purchaseNFT(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
         require(id_to_marketDetails[tokenId].price <= amount); 
         id_to_owner[tokenId] = to;
+        _removeNFTfromMarket(tokenId);
         payable(from).transfer(amount);
         safeTransferFrom(from, to, tokenId);
         emit Transfer(from, to, tokenId);
