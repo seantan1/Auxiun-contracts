@@ -14,6 +14,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     struct MarketDetails {
         bool forSale;
         uint256 price;
+        address seller;
     }
 
 
@@ -33,7 +34,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     uint256 private tokenIdCounter = 0;
 
     // Number of NFTs on market (Maybe for future use)
-    uint256 itemsOnMarket = 0;
+    uint256 NFTsOnMarket = 0;
 
     // Keeping track of the tokenIds put on the market
     uint256[] tokenIdsOnMarket;
@@ -110,15 +111,16 @@ contract AuxiunNFT is Ownable, ERC721 {
         _;
     }
 
-
-
-
     // Helper Functions for NFTs on the market.
 
     function _removeNFTfromMarket(uint tokenId) private tokenExists(tokenId) {
-        id_to_marketDetails[tokenId] = MarketDetails(false, 0);
-        itemsOnMarket--;
+        require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
+        id_to_marketDetails[tokenId] = MarketDetails(false, 0, address(0));
+        NFTsOnMarket--;
         // _removeIdOnMarket(tokenId);
+
+        // transfer token back to owner
+        _safeTransfer(address(this), msg.sender, tokenId, "");
     }
 
     function _removeIdOnMarket(uint256 tokenId) private {
@@ -142,9 +144,12 @@ contract AuxiunNFT is Ownable, ERC721 {
     // Functions for market place interactions.
     
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
-        id_to_marketDetails[tokenId] = MarketDetails(true, price);
-        itemsOnMarket++;
+        id_to_marketDetails[tokenId] = MarketDetails(true, price, msg.sender);
+        NFTsOnMarket++;
         // tokenIdsOnMarket.push(tokenId);
+
+        // transfer ownership of tokenId to this contract
+        _safeTransfer(msg.sender, address(this), tokenId, "");
     }
 
     function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
@@ -152,30 +157,64 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
 
-    function purchaseNFT(address from, address to, uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
+    function purchaseNFT(uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
         require(id_to_marketDetails[tokenId].price <= amount); 
-        id_to_owner[tokenId] = to;
+        // id_to_owner[tokenId] = to; // you don't do this since u already calling transfer function
         _removeNFTfromMarket(tokenId);
-        payable(from).transfer(amount);
-        safeTransferFrom(from, to, tokenId);
-        emit Transfer(from, to, tokenId);
+        payable(msg.sender).transfer(amount);
+        _safeTransfer(address(this), msg.sender, tokenId, "");
+        // emit Transfer(from, to, tokenId); // transfer function already emits Transfer event
+    }
+ 
+    // returns an array of token ids which are listed as forSale
+    function _fetchTokenIdsOnMarket() internal view returns(uint256[] memory) {
+        // initialize result's array length
+        uint256[] memory result = new uint256[](NFTsOnMarket);
+        // for loop to fetch all tokenIds where id_to_marketDetails[i].forSale == true
+        uint256 counter = 0;
+        for (uint256 i = 0; i < tokenIdCounter; i++) {
+            // only tokenIds which are for sale will be pushed into the result array
+            if (id_to_marketDetails[i].forSale) {
+                result[counter] = i;
+                counter++;
+            }
+        }
+        return result;
     }
 
+    // fetch by order: tokenURI, token price, token seller's address
+    function fetchNFTDataById(uint256 tokenId) external view returns(string memory, uint256, address) {
+        return (tokenURI(tokenId), id_to_marketDetails[tokenId].price, id_to_marketDetails[tokenId].seller);
+    }
 
-
-    // TODO: 
-    // 1. function that loops through id_to_marketDetails, return the tokenId and tokenURI and if possible the token's owner too
-    /* 
-        Can get the NFTS on the market by going through every tokenId that has existed 
-        and check if forSale in id_to_marketDetailsis "true".
-
-        OR
-
-        Keep track of the NFTs with an array of tokenIds (Will need to create a function to remove items).
-        We can continue to use id_to_marketDetails to get information about the token.
+    /**
+    * Returns 4 arrays of all tokens on sale which are:
+    * 1. array of tokenIds
+    * 2. array of tokenURIs
+    * 3. array of token prices
+    * 4. array of token sellers
     */
-  
+    function multiCallNFTsOnMarket() external view returns(uint256[] memory, string[] memory, uint256[] memory, address[] memory) {
+        // initialize tokenIds' array length
+        uint256[] memory tokenIds = new uint256[](NFTsOnMarket);
+        // fetch the tokenIds on the market
+        tokenIds = _fetchTokenIdsOnMarket();
+
+        // initialize array for tokenURIs, prices and sellers
+        string[] memory tokenURIs = new string[](NFTsOnMarket);
+        uint256[] memory tokenPrices = new uint256[](NFTsOnMarket);
+        address[] memory tokenSellers = new address[](NFTsOnMarket);
+
+        // for loop to fetch all data of tokenIds and push into the 3 arrays
+        for (uint256 i = 0; i < NFTsOnMarket; i++) {
+            tokenURIs[i] = tokenURI(tokenIds[i]);
+            tokenPrices[i] = id_to_marketDetails[tokenIds[i]].price;
+            tokenSellers[i] = id_to_marketDetails[tokenIds[i]].seller;
+        }
+        
+        return (tokenIds, tokenURIs, tokenPrices, tokenSellers);
+    }
 
     function kill() public onlyOwner {
         selfdestruct(payable(owner()));
