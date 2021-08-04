@@ -42,7 +42,7 @@ contract AuxiunNFT is Ownable, ERC721 {
  
     constructor() ERC721("AuxiunNFT", "AUXN") {
         // TODO: Setup database api server and set the link here, remember to add the "/" at the end of the uri
-        baseURI = "https://todo/";
+        baseURI = "http://54.153.182.13:3998/api/nft/";
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
