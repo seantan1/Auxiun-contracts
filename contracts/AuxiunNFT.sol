@@ -139,20 +139,20 @@ contract AuxiunNFT is Ownable, ERC721 {
     
 
    // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
-    function purchaseNFT(uint256 tokenId, uint256 amount) public payable tokenExists(tokenId) {
+    function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
-        require(id_to_marketDetails[tokenId].price <= amount);
+        require(id_to_marketDetails[tokenId].price <= msg.value);
 
         // Remove NFT form market
         _removeNFTfromMarket(tokenId);
 
         // Transfer fund from NFT buyer to contract
-        (bool successTo, ) =  address(this).call{value: amount}("");
+        (bool successTo, ) =  address(this).call{value: msg.value}("");
         require(successTo, "Failed to send ETH to contract");
 
         // Transfer fund from contract to NFT seller
         address seller = id_to_owner[tokenId];
-        (bool successFrom, ) =  seller.call{value: amount}("");
+        (bool successFrom, ) =  seller.call{value: msg.value}("");
         require(successFrom, "Failed to withdraw ETH from contract");
 
         // Transfer token to buyer
