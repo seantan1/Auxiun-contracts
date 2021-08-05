@@ -36,9 +36,6 @@ contract AuxiunNFT is Ownable, ERC721 {
     // Number of NFTs on market (Maybe for future use)
     uint256 NFTsOnMarket = 0;
 
-    // Keeping track of the tokenIds put on the market
-    uint256[] tokenIdsOnMarket;
-
  
     constructor() ERC721("AuxiunNFT", "AUXN") {
         // TODO: Setup database api server and set the link here, remember to add the "/" at the end of the uri
@@ -117,36 +114,15 @@ contract AuxiunNFT is Ownable, ERC721 {
         require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
         id_to_marketDetails[tokenId] = MarketDetails(false, 0, address(0));
         NFTsOnMarket--;
-        // _removeIdOnMarket(tokenId);
 
         // transfer token back to owner
         _safeTransfer(address(this), msg.sender, tokenId, "");
     }
-
-    function _removeIdOnMarket(uint256 tokenId) private {
-        int index = _getIndexOfTokenId(tokenId);
-        require(index > -1, "No tokenId found on the market.");
-
-        tokenIdsOnMarket[uint256(index)] = tokenIdsOnMarket[tokenIdsOnMarket.length -1];
-        tokenIdsOnMarket.pop();
-    }
-
-    function _getIndexOfTokenId(uint256 tokenId) private view returns (int256) {
-        for(uint256 i = 0; i < tokenIdsOnMarket.length; i++){
-            if(tokenId == tokenIdsOnMarket[i]){
-                return int(i);
-            }
-        }
-        return -1;
-    }   
-
   
     // Functions for market place interactions.
-    
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price, msg.sender);
         NFTsOnMarket++;
-        // tokenIdsOnMarket.push(tokenId);
 
         // transfer ownership of tokenId to this contract
         _safeTransfer(msg.sender, address(this), tokenId, "");
@@ -156,15 +132,12 @@ contract AuxiunNFT is Ownable, ERC721 {
         _removeNFTfromMarket(tokenId);
     }
 
-
     function purchaseNFT(uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
         require(id_to_marketDetails[tokenId].price <= amount); 
-        // id_to_owner[tokenId] = to; // you don't do this since u already calling transfer function
         _removeNFTfromMarket(tokenId);
         payable(msg.sender).transfer(amount);
         _safeTransfer(address(this), msg.sender, tokenId, "");
-        // emit Transfer(from, to, tokenId); // transfer function already emits Transfer event
     }
  
     // returns an array of token ids which are listed as forSale
