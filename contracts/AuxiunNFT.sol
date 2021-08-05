@@ -27,8 +27,6 @@ contract AuxiunNFT is Ownable, ERC721 {
     // mapping of tokenId to Owner
     mapping(uint256 => address) id_to_owner;
 
-    // mapping of users balances
-    mapping(address => uint256) private userBalances;
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
@@ -102,12 +100,12 @@ contract AuxiunNFT is Ownable, ERC721 {
     // Modifers
 
     modifier tokenExists(uint256 tokenId) {
-        require(_exists(tokenId));
+        require(_exists(tokenId), "Token ID does not exist.");
         _;
     }
 
     modifier belongsToSender(uint256 tokenId){
-        require(id_to_owner[tokenId] == msg.sender);
+        require(id_to_owner[tokenId] == msg.sender, "Token does not belong to sender.");
         _;
     }
 
@@ -145,35 +143,13 @@ contract AuxiunNFT is Ownable, ERC721 {
         // Remove NFT form market
         _removeNFTfromMarket(tokenId);
 
-        // Transfer fund from NFT buyer to contract
-        (bool success, ) =  address(this).call{value: msg.value}("");
-        require(success, "Failed to send ETH to contract");
-
-        // Set the seller balance ( seller can extract their funds through withdrawBalance() )
+        // Transfer fund from NFT buyer to NFT Seller
         address seller = id_to_owner[tokenId];
-        userBalances[seller] = msg.value;
+        (bool success, ) =  seller.call{value: msg.value}("");
+        require(success, "Failed to send ETH to Seller");
 
         // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
-    }
- 
-    function withdrawBalance() external payable {
-        uint256 balance = userBalances[msg.sender];
-
-        // Balance needs to be viable
-        require(balance > 0);
-
-        // Set the balance to 0 before transferring to prevent reentracy
-        userBalances[msg.sender] = 0;
-
-        // Make the transfer
-        (bool success, ) =  msg.sender.call{value: balance}("");
-        require(success, "Failed to withdraw ETH from contract");
-    }
-
-
-    function viewBalance() external view returns (uint256) {
-        return userBalances[msg.sender];
     }
  
     // returns an array of token ids which are listed as forSale

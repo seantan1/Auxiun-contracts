@@ -1,8 +1,10 @@
 const AuxiunNFT = artifacts.require("AuxiunNFT")
 const utils = require("./helpers/utils")
 
-contract("AuxiunNFT", () => {
+contract("AuxiunNFT", (accounts) => {
     let contractInstance;
+
+    let [alice, bob] = accounts;
 
     beforeEach(async () => {
         contractInstance = await AuxiunNFT.new();
@@ -73,36 +75,22 @@ contract("AuxiunNFT", () => {
     })
 
 
-
-
-   /**
-    * Tests: fetchNFTDataById()
-    */
-    it("should get NFT data by tokenId", async () => {
-
-    })
-
-
-
-    /**
-     *  Tests multiCallNFTsOnMarket() and  _fetchTokenIdsOnMarket()
-        Should return 4 arrays:
-        * 1. array of tokenIds
-        * 2. array of tokenURIs
-        * 3. array of token prices
-        * 4. array of token sellers 
-     */
-    it("should get NFT data if they are listed on the market ", async () => {
-        
-    })
-
-
+    // Need to fix
     /**
      * Tests: listNFTOnMarket() 
      */ 
     it("should be able list NFT on market.", async () => {
+
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:alice});
+
+        const result = await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        assert.equals(result.receipt.status, true)
     
     })
+
+
     it("should not be able list NFT on market if token does not exist.", async () => {
     
     })
@@ -145,24 +133,25 @@ contract("AuxiunNFT", () => {
     it("token should be removed from the market after a successful purchase.", async () => {
     
     })
+
     
-    /**
-     * Tests: withdrawBalance()
-     */
-    it("user should be able to withdraw funds from userBalance.", async () => {
-    
-    })
-    
-    it("user should not be able to withdraw funds from userBalance if their balance is equal or less than 0.", async () => {
-    
+   /**
+    * Tests: fetchNFTDataById()
+    */
+    it("should get NFT data by tokenId", async () => {
+
     })
 
-
     /**
-     * Tests: viewBalance()
+     *  Tests multiCallNFTsOnMarket() and  _fetchTokenIdsOnMarket()
+        Should return 4 arrays:
+        * 1. array of tokenIds
+        * 2. array of tokenURIs
+        * 3. array of token prices
+        * 4. array of token sellers 
      */
-    it("user should be able to view their balance.", async () => {
-    
+    it("should get NFT data if they are listed on the market ", async () => {
+        
     })
 
 
