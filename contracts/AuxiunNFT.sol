@@ -112,7 +112,6 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     // Helper Functions for NFTs on the market.
-
     function _removeNFTfromMarket(uint tokenId) private tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
         id_to_marketDetails[tokenId] = MarketDetails(false, 0, address(0));
@@ -122,6 +121,8 @@ contract AuxiunNFT is Ownable, ERC721 {
         _safeTransfer(address(this), msg.sender, tokenId, "");
     }
   
+
+
     // Functions for market place interactions.
     function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price, msg.sender);
@@ -136,7 +137,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
 
-    
+
 
    // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
     function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) {
@@ -150,7 +151,7 @@ contract AuxiunNFT is Ownable, ERC721 {
         (bool success, ) =  address(this).call{value: msg.value}("");
         require(success, "Failed to send ETH to contract");
 
-        // Set the seller balance ( seller can extract their funds through withdraw() )
+        // Set the seller balance ( seller can extract their funds through withdrawBalance() )
         address seller = id_to_owner[tokenId];
         userBalances[seller] = msg.value;
 
@@ -159,10 +160,22 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     
-    function withdraw(uint256 amount) external payable {
-        require(userBalances[msg.sender] >= amount);
-        (bool success, ) =  msg.sender.call{value: amount}("");
+    function withdrawBalance() external payable {
+        uint256 balance = userBalances[msg.sender];
+
+        // Balance needs to be viable
+        require(balance > 0);
+
+        // Set the balance to 0 before transferring to prevent reentracy
+        userBalances[msg.sender] = 0;
+
+        // Make the transfer
+        (bool success, ) =  msg.sender.call{value: balance}("");
         require(success, "Failed to withdraw ETH from contract");
+    }
+
+    function viewFunds() external view {
+
     }
  
     // returns an array of token ids which are listed as forSale

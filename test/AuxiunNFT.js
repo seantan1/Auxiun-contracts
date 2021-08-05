@@ -72,7 +72,56 @@ contract("AuxiunNFT", () => {
            await utils.throws(contractInstance.tokenURI(5))
     })
 
-    it()
 
+    // Positive
+    it("should be able list NFT on market.", async () => {
+    
+    })
+
+    it("should be able to remove NFT on market.", async () => {
+    
+    })
+
+    it("buyer should receive NFT after sending the correct amount of funds.", async () => {
+    
+    })
+
+    it("token should be removed from the market after a successfule purchase.", async () => {
+    
+    })
+    
+
+    it("seller should be able to withdraw funds from userBalance.", async () => {
+    
+    })
+
+
+
+    // Negative
+    it("should not be able list NFT on market if token does not exist.", async () => {
+    
+    })
+
+    it("should not be able list NFT on market if token does not belong to owner.", async () => {
+    
+    })
+
+
+    it("should not be able to remove NFT on market if token does not exist.", async () => {
+    
+    })
+
+    it("should not be able to remove NFT on market if token does not belong to owner.", async () => {
+    
+    })
+
+
+    it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
+    
+    })
+
+    it("seller should not be able to withdraw funds from userBalance if their balance is equal or less than 0.", async () => {
+    
+    })
 
 })
