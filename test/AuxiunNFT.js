@@ -147,6 +147,33 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result, bob);
     })
 
+    // Need to fix
+    it("seller should receive correct amount of funds after their NFT is purchased.", async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        
+    
+        await contractInstance.mint(gameId, itemId, {from:alice});
+
+        // Alice lists her NFT
+        await contractInstance.listNFTOnMarket(0, 1000, {from: alice});
+
+        // Get balance before the purchase
+        const initialBalance = await web3.eth.getBalance(alice);
+        console.log("Initial: ", initialBalance)
+
+
+        // Bob purchases NFT
+        await contractInstance.purchaseNFT(0, {value:1000, from: bob});
+
+        // Alice should have a balance of initialBalance + 100
+        const result = await web3.eth.getBalance(alice);
+        let expected = parseInt(initialBalance) + 1000;
+
+        console.log("Final:   ", result)
+        assert.equal(result, expected);
+    })
+
 
     it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
     
