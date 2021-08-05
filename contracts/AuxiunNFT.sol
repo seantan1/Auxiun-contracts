@@ -137,8 +137,6 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
 
-
-
    // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
     function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
@@ -200,7 +198,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     /**
-    * Returns 4 arrays of all tokens on sale which are:
+    * Returns 4 arrays of all tokens for sale which are:
     * 1. array of tokenIds
     * 2. array of tokenURIs
     * 3. array of token prices

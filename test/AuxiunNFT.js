@@ -73,31 +73,36 @@ contract("AuxiunNFT", () => {
     })
 
 
-    // Positive
+
+
+   /**
+    * Tests: fetchNFTDataById()
+    */
+    it("should get NFT data by tokenId", async () => {
+
+    })
+
+
+
+    /**
+     *  Tests multiCallNFTsOnMarket() and  _fetchTokenIdsOnMarket()
+        Should return 4 arrays:
+        * 1. array of tokenIds
+        * 2. array of tokenURIs
+        * 3. array of token prices
+        * 4. array of token sellers 
+     */
+    it("should get NFT data if they are listed on the market ", async () => {
+        
+    })
+
+
+    /**
+     * Tests: listNFTOnMarket() 
+     */ 
     it("should be able list NFT on market.", async () => {
     
     })
-
-    it("should be able to remove NFT on market.", async () => {
-    
-    })
-
-    it("buyer should receive NFT after sending the correct amount of funds.", async () => {
-    
-    })
-
-    it("token should be removed from the market after a successfule purchase.", async () => {
-    
-    })
-    
-
-    it("seller should be able to withdraw funds from userBalance.", async () => {
-    
-    })
-
-
-
-    // Negative
     it("should not be able list NFT on market if token does not exist.", async () => {
     
     })
@@ -106,6 +111,13 @@ contract("AuxiunNFT", () => {
     
     })
 
+
+    /**
+     * Tests:  removeNFTFromMarket()
+     */
+    it("should be able to remove NFT on market.", async () => {
+    
+    })
 
     it("should not be able to remove NFT on market if token does not exist.", async () => {
     
@@ -116,12 +128,48 @@ contract("AuxiunNFT", () => {
     })
 
 
+    /**
+     * Tests:  purchaseNFT()
+     */
+    it("buyer should receive NFT after sending the correct amount of funds.", async () => {
+    
+    })
     it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
     
     })
 
-    it("seller should not be able to withdraw funds from userBalance if their balance is equal or less than 0.", async () => {
+
+    /**
+     * Tests: _removeNFTfromMarket()    PRIVATE FUNCTION
+     */
+    it("token should be removed from the market after a successful purchase.", async () => {
+    
+    })
+    
+    /**
+     * Tests: withdrawBalance()
+     */
+    it("user should be able to withdraw funds from userBalance.", async () => {
+    
+    })
+    
+    it("user should not be able to withdraw funds from userBalance if their balance is equal or less than 0.", async () => {
     
     })
 
+
+    /**
+     * Tests: viewBalance()
+     */
+    it("user should be able to view their balance.", async () => {
+    
+    })
+
+
+
+  
+
+
+
+ 
 })
