@@ -147,16 +147,22 @@ contract AuxiunNFT is Ownable, ERC721 {
         _removeNFTfromMarket(tokenId);
 
         // Transfer fund from NFT buyer to contract
-        (bool successTo, ) =  address(this).call{value: msg.value}("");
-        require(successTo, "Failed to send ETH to contract");
+        (bool success, ) =  address(this).call{value: msg.value}("");
+        require(success, "Failed to send ETH to contract");
 
-        // Transfer fund from contract to NFT seller
+        // Set the seller balance ( seller can extract their funds through withdraw() )
         address seller = id_to_owner[tokenId];
-        (bool successFrom, ) =  seller.call{value: msg.value}("");
-        require(successFrom, "Failed to withdraw ETH from contract");
+        userBalances[seller] = msg.value;
 
         // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
+    }
+
+    
+    function withdraw(uint256 amount) external payable {
+        require(userBalances[msg.sender] >= amount);
+        (bool success, ) =  msg.sender.call{value: amount}("");
+        require(success, "Failed to withdraw ETH from contract");
     }
  
     // returns an array of token ids which are listed as forSale
@@ -210,5 +216,9 @@ contract AuxiunNFT is Ownable, ERC721 {
 
     function kill() public onlyOwner {
         selfdestruct(payable(owner()));
+    }
+
+    receive() external payable {
+    // this function enables the contract to receive funds
     }
 }

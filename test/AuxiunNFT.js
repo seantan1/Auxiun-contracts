@@ -72,5 +72,7 @@ contract("AuxiunNFT", () => {
            await utils.throws(contractInstance.tokenURI(5))
     })
 
+    it()
+
 
 })
