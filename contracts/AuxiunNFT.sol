@@ -158,8 +158,7 @@ contract AuxiunNFT is Ownable, ERC721 {
         // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
     }
-
-    
+ 
     function withdrawBalance() external payable {
         uint256 balance = userBalances[msg.sender];
 
@@ -174,8 +173,9 @@ contract AuxiunNFT is Ownable, ERC721 {
         require(success, "Failed to withdraw ETH from contract");
     }
 
-    function viewFunds() external view {
 
+    function viewBalance() external view returns (uint256) {
+        return userBalances[msg.sender];
     }
  
     // returns an array of token ids which are listed as forSale
