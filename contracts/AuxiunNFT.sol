@@ -107,15 +107,10 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
     // Helper Functions for NFTs on the market.
     function _removeNFTfromMarket(uint tokenId) private tokenExists(tokenId) {
-        require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
         id_to_marketDetails[tokenId] = MarketDetails(false, 0, address(0));
         NFTsOnMarket--;
-
-        // transfer token back to owner
-        _safeTransfer(address(this), msg.sender, tokenId, "");
     }
   
-
 
     // Functions for market place interactions.
     function listNFTOnMarket(uint256 tokenId, uint256 price) external payable tokenExists(tokenId) belongsToSender(tokenId){
@@ -126,21 +121,26 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         _safeTransfer(msg.sender, address(this), tokenId, "");
     }
 
-    function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) belongsToSender(tokenId){
+    function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) {
+        require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
         _removeNFTfromMarket(tokenId);
+
+        // transfer token back to owner
+        _safeTransfer(address(this), msg.sender, tokenId, "");
     }
 
 
    // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
     function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) {
-        require(id_to_marketDetails[tokenId].forSale);
-        require(id_to_marketDetails[tokenId].price <= msg.value);
+        require(id_to_marketDetails[tokenId].seller != msg.sender, "Can not purchase your own NFTs.");
+        require(id_to_marketDetails[tokenId].forSale, "NFT not for sale");
+        require(id_to_marketDetails[tokenId].price <= msg.value, "Insufficient funds for purchase.");
 
         // Remove NFT form market
         _removeNFTfromMarket(tokenId);
 
         // Transfer fund from NFT buyer to NFT Seller
-        address seller = ownerOf(tokenId);
+        address seller = id_to_marketDetails[tokenId].seller;
         (bool success, ) =  seller.call{value: msg.value}("");
         require(success, "Failed to send ETH to Seller");
 

@@ -75,9 +75,8 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    // Need to fix
     /**
-     * Tests: listNFTOnMarket() 
+     * Tests: listNFTOnMarket(tokenId, price) 
      */ 
     it("should be able list NFT on market.", async () => {
 
@@ -87,32 +86,45 @@ contract("AuxiunNFT", (accounts) => {
        
         const result = await contractInstance.listNFTOnMarket(0, 100, {from: alice});
         assert.equal(result.receipt.status, true);
-    
     })
 
 
     it("should not be able list NFT on market if token does not exist.", async () => {
-    
+        await utils.throws(contractInstance.listNFTOnMarket(0, 100, {from: alice}))
     })
 
+
     it("should not be able list NFT on market if token does not belong to owner.", async () => {
-    
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:bob});
+        await utils.throws(contractInstance.listNFTOnMarket(0, 100, {from: alice}))
     })
 
 
     /**
      * Tests:  removeNFTFromMarket()
      */
-    it("should be able to remove NFT on market.", async () => {
-    
+    it("should be able to remove NFT on market if the NFT belongs to the owner", async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:alice});
+       
+        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        const result = await contractInstance.removeNFTFromMarket(0, {from: alice})
+        assert.equal(result.receipt.status, true);
     })
 
     it("should not be able to remove NFT on market if token does not exist.", async () => {
-    
+        await utils.throws(contractInstance.removeNFTFromMarket(0, {from: alice}));
     })
 
     it("should not be able to remove NFT on market if token does not belong to owner.", async () => {
-    
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await utils.throws(contractInstance.removeNFTFromMarket(0, {from: bob}))
     })
 
 
@@ -120,15 +132,29 @@ contract("AuxiunNFT", (accounts) => {
      * Tests:  purchaseNFT()
      */
     it("buyer should receive NFT after sending the correct amount of funds.", async () => {
-    
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:alice});
+
+        // Alice lists her NFT
+        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+
+        // Bob purchases NFT
+        await contractInstance.purchaseNFT(0, {value:100, from: bob});
+
+        // Bob should now own the NFT
+        result = await contractInstance.ownerOf(0);
+        assert.equal(result, bob);
     })
+
+
     it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
     
     })
 
 
     /**
-     * Tests: _removeNFTfromMarket()    PRIVATE FUNCTION
+     * Tests: _removeNFTfromMarket()   PRIVATE FUNCTION
      */
     it("token should be removed from the market after a successful purchase.", async () => {
     
