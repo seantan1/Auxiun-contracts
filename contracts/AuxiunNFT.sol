@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-contract AuxiunNFT is Ownable, ERC721 {
+contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     struct Metadata {
         string game_id;
         string item_id;
@@ -60,7 +61,6 @@ contract AuxiunNFT is Ownable, ERC721 {
         returns (string memory)
     {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-
         return strConcat(_baseURI(), id_to_metadata[tokenId].game_id, "/", id_to_metadata[tokenId].item_id, "");
     }
 
@@ -71,7 +71,7 @@ contract AuxiunNFT is Ownable, ERC721 {
         uint256 tokenId = tokenIdCounter;
         tokenIdCounter++;
         id_to_metadata[tokenId] = Metadata(game_id, item_id);
-
+        id_to_owner[tokenId] = msg.sender;
         _safeMint(msg.sender, tokenId);
     }
 
@@ -105,7 +105,7 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     modifier belongsToSender(uint256 tokenId){
-        require(id_to_owner[tokenId] == msg.sender, "Token does not belong to sender.");
+        require(ownerOf(tokenId) == msg.sender, "Token does not belong to sender.");
         _;
     }
 
@@ -122,7 +122,7 @@ contract AuxiunNFT is Ownable, ERC721 {
 
 
     // Functions for market place interactions.
-    function listNFTOnMarket(uint256 tokenId, uint256 price) external tokenExists(tokenId) belongsToSender(tokenId){
+    function listNFTOnMarket(uint256 tokenId, uint256 price) external payable tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price, msg.sender);
         NFTsOnMarket++;
 
@@ -206,6 +206,12 @@ contract AuxiunNFT is Ownable, ERC721 {
     }
 
     receive() external payable {
-    // this function enables the contract to receive funds
+        // this function enables the contract to receive funds
+        // Nothing needed here
+    }
+
+
+    function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 }

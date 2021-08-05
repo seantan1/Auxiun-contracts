@@ -84,9 +84,9 @@ contract("AuxiunNFT", (accounts) => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
-
+       
         const result = await contractInstance.listNFTOnMarket(0, 100, {from: alice});
-        assert.equals(result.receipt.status, true)
+        assert.equal(result.receipt.status, true);
     
     })
 
