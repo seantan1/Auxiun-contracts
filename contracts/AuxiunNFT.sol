@@ -27,6 +27,9 @@ contract AuxiunNFT is Ownable, ERC721 {
     // mapping of tokenId to Owner
     mapping(uint256 => address) id_to_owner;
 
+    // mapping of users balances
+    mapping(address => uint256) private userBalances;
+
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
 
@@ -132,11 +135,27 @@ contract AuxiunNFT is Ownable, ERC721 {
         _removeNFTfromMarket(tokenId);
     }
 
-    function purchaseNFT(uint256 tokenId, uint256 amount) external tokenExists(tokenId) {
+
+    
+
+   // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
+    function purchaseNFT(uint256 tokenId, uint256 amount) public payable tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].forSale);
-        require(id_to_marketDetails[tokenId].price <= amount); 
+        require(id_to_marketDetails[tokenId].price <= amount);
+
+        // Remove NFT form market
         _removeNFTfromMarket(tokenId);
-        payable(msg.sender).transfer(amount);
+
+        // Transfer fund from NFT buyer to contract
+        (bool successTo, ) =  address(this).call{value: amount}("");
+        require(successTo, "Failed to send ETH to contract");
+
+        // Transfer fund from contract to NFT seller
+        address seller = id_to_owner[tokenId];
+        (bool successFrom, ) =  seller.call{value: amount}("");
+        require(successFrom, "Failed to withdraw ETH from contract");
+
+        // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
     }
  
