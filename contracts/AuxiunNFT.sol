@@ -25,9 +25,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // mapping of tokenId to metadata
     mapping(uint256 => Metadata) id_to_metadata;
 
-    // mapping of tokenId to Owner
-    mapping(uint256 => address) id_to_owner;
-
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
@@ -71,7 +68,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         uint256 tokenId = tokenIdCounter;
         tokenIdCounter++;
         id_to_metadata[tokenId] = Metadata(game_id, item_id);
-        id_to_owner[tokenId] = msg.sender;
         _safeMint(msg.sender, tokenId);
     }
 
@@ -144,7 +140,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         _removeNFTfromMarket(tokenId);
 
         // Transfer fund from NFT buyer to NFT Seller
-        address seller = id_to_owner[tokenId];
+        address seller = ownerOf(tokenId);
         (bool success, ) =  seller.call{value: msg.value}("");
         require(success, "Failed to send ETH to Seller");
 
@@ -210,7 +206,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         // Nothing needed here
     }
 
-
+    /** Needed for calling safeTransferFrom */
     function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
         return this.onERC721Received.selector;
     }
