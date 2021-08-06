@@ -84,13 +84,13 @@ contract("AuxiunNFT", (accounts) => {
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
        
-        const result = await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        const result = await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         assert.equal(result.receipt.status, true);
     })
 
 
     it("should not be able list NFT on market if token does not exist.", async () => {
-        await utils.throws(contractInstance.listNFTOnMarket(0, 100, {from: alice}))
+        await utils.throws(contractInstance.listNFTOnMarket(0, 10, {from: alice}))
     })
 
 
@@ -98,7 +98,7 @@ contract("AuxiunNFT", (accounts) => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:bob});
-        await utils.throws(contractInstance.listNFTOnMarket(0, 100, {from: alice}))
+        await utils.throws(contractInstance.listNFTOnMarket(0, 10, {from: alice}))
     })
 
 
@@ -110,7 +110,7 @@ contract("AuxiunNFT", (accounts) => {
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
        
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         const result = await contractInstance.removeNFTFromMarket(0, {from: alice})
         assert.equal(result.receipt.status, true);
     })
@@ -123,7 +123,7 @@ contract("AuxiunNFT", (accounts) => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         await utils.throws(contractInstance.removeNFTFromMarket(0, {from: bob}))
     })
 
@@ -137,10 +137,10 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         // Bob purchases NFT
-        await contractInstance.purchaseNFT(0, {value:100, from: bob});
+        await contractInstance.purchaseNFT(0, {value:10, from: bob});
 
         // Bob should now own the NFT
         result = await contractInstance.ownerOf(0);
@@ -156,7 +156,7 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 1000, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         // Get balance before the purchase
         const initialBalance = await web3.eth.getBalance(alice);
@@ -164,11 +164,11 @@ contract("AuxiunNFT", (accounts) => {
 
 
         // Bob purchases NFT
-        await contractInstance.purchaseNFT(0, {value:1000, from: bob});
+        await contractInstance.purchaseNFT(0, {value:10, from: bob});
 
         // Alice should have a balance of initialBalance + 100
         const result = await web3.eth.getBalance(alice);
-        let expected = parseInt(initialBalance) + 1000;
+        let expected = parseInt(initialBalance) + 10;
 
         console.log("Final:   ", result)
         assert.equal(result, expected);
@@ -181,10 +181,10 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         // Bob purchases NFT with insufficient funds
-        await utils.throws(contractInstance.purchaseNFT(0, {value:50, from: bob}));
+        await utils.throws(contractInstance.purchaseNFT(0, {value:5, from: bob}));
     })
 
 
@@ -197,10 +197,10 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         // Bob purchases NFT
-        await contractInstance.purchaseNFT(0, {value:100, from: bob});
+        await contractInstance.purchaseNFT(0, {value:10, from: bob});
 
         // Token 0 should not be for sale now.
         const result = await contractInstance.id_to_marketDetails[0].forSale;
@@ -218,7 +218,7 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         const result = await contractInstance.fetchNFTDataById(0);
         assert.equal(result.receipt.status, true);
@@ -240,17 +240,10 @@ contract("AuxiunNFT", (accounts) => {
         await contractInstance.mint(gameId, itemId, {from:alice});
 
         // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 100, {from: alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         const result = await contractInstance.multiCallNFTsOnMarket();
         assert.equal(result.result.status, true)
     })
 
-
-
-  
-
-
-
- 
 })
