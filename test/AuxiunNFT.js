@@ -233,7 +233,7 @@ contract("AuxiunNFT", (accounts) => {
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
-        // Get toke details
+        // Get token details
         const result = await contractInstance.multiCallNFTsOnMarket();
 
         // Check details are correct
