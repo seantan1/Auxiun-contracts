@@ -188,40 +188,25 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    /**
-     * Tests: _removeNFTfromMarket()
-     */
-    it("token should be removed from the market after a successful purchase.", async () => {
-        let gameId = "bsg_escape_from_tarkov";
-        let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
-
-        // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
-
-        // Bob purchases NFT
-        await contractInstance.purchaseNFT(0, {value:10, from: bob});
-
-        // Token 0 should not be for sale now.
-        const result = await contractInstance.id_to_marketDetails[0].forSale;
-        assert.equal(result, false)
-    })
 
     /**
     * Tests: fetchNFTDataById()
     * 
-    * TODO: Need to test it returns the correct information
     */
     it("should get NFT data by tokenId", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
+        const correctURI = await contractInstance.tokenURI(0);
 
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
-
+        
         const result = await contractInstance.fetchNFTDataById(0);
-        assert.equal(result.receipt.status, true);
+        assert.equal(result[0], correctURI);
+        assert.equal(result[1].toString(), '10');
+        assert.equal(result[2], alice);
+        
     })
 
     /**
@@ -232,9 +217,30 @@ contract("AuxiunNFT", (accounts) => {
         * 3. array of token prices
         * 4. array of token sellers 
         * 
-        * TODO: Need to test it returns the correct information
      */
     it("should get NFT data if they are listed on the market ", async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.mint(gameId, itemId, {from:alice});
+        const correctURI = await contractInstance.tokenURI(0);
+
+        // Alice lists her NFT
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
+
+        // Get toke details
+        const result = await contractInstance.multiCallNFTsOnMarket();
+
+        // Check details are correct
+        assert.equal(result[0][0].toString(), '0')
+        assert.equal(result[1][0].toString(), correctURI)
+        assert.equal(result[2][0].toString(), '10')
+        assert.equal(result[3][0].toString(), alice)
+    })
+
+    /**
+     * Tests: multiCallNFTsOnMarket() and _removeNFTfromMarket() 
+     */
+   it("token should be removed from the market after a successful purchase.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -242,8 +248,24 @@ contract("AuxiunNFT", (accounts) => {
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
-        const result = await contractInstance.multiCallNFTsOnMarket();
-        assert.equal(result.result.status, true)
+        // Bob purchases NFT
+        await contractInstance.purchaseNFT(0, {value:10, from: bob});
+
+
+        // Token 0 should not be for sale now.
+        // fetchNFTById() should set the price of the NFT to 0 and the seller to the zero address.
+        const fetchNFTById_result = await contractInstance.fetchNFTDataById(0);
+        assert.equal(fetchNFTById_result[1].toString(), "0")
+        assert.equal(fetchNFTById_result[2], "0x0000000000000000000000000000000000000000")
+
+        // multiCallNFTsOnMarket() should return empty arrays
+        const multiCallNFTsOnMarket_result = await contractInstance.multiCallNFTsOnMarket();
+        assert.equal(multiCallNFTsOnMarket_result[0], '')
+        assert.equal(multiCallNFTsOnMarket_result[1], '')
+        assert.equal(multiCallNFTsOnMarket_result[2], '')
+        assert.equal(multiCallNFTsOnMarket_result[3], '')
+
+
     })
 
 })
