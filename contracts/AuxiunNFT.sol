@@ -18,7 +18,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         address seller;
     }
 
-
     // mapping of tokenId to market details
     mapping(uint256 => MarketDetails) id_to_marketDetails;
 
@@ -94,7 +93,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
 
     // Modifers
-
     modifier tokenExists(uint256 tokenId) {
         require(_exists(tokenId), "Token ID does not exist.");
         _;

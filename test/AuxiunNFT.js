@@ -18,7 +18,7 @@ contract("AuxiunNFT", (accounts) => {
         Expected Result: Transaction should be successful 
         i.e receipt status == true.
     */
-    it("should set the baseURI.", async () => {
+    it("#1 should set the baseURI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com";
 
@@ -31,7 +31,7 @@ contract("AuxiunNFT", (accounts) => {
         Expected Result: Transaction should be successful 
         i.e receipt status == true.
     */
-    it("should mint an asset, given a gameId and itemId.", async () => {
+    it("#2 should mint an asset, given a gameId and itemId.", async () => {
         // Set up
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
@@ -41,13 +41,12 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result.receipt.status, true);
     })
 
-
     /* 
         Expected Result: TokenURI should return
         a URI structured like the following -
         "<baseURI> + <gameId> + / + <itemId>".
     */
-    it("should return an appropriate token URI.", async () => {
+    it("#3 should return an appropriate token URI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com/";
         let gameId = "bsg_escape_from_tarkov";
@@ -65,7 +64,7 @@ contract("AuxiunNFT", (accounts) => {
         Expected Result: TokenURI() should throw an error after 
         attempting to get a token URI from a non-existant asset.
     */
-    it("should throw an error after attempting to access a non-existent asset.", async () => {
+    it("#4 should throw an error after attempting to access a non-existent asset.", async () => {
            // Set up
            let baseURI = "https://auxiun-nft-market.com/";
            await contractInstance.setBaseURI(baseURI)
@@ -78,7 +77,7 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests: listNFTOnMarket(tokenId, price) 
      */ 
-    it("should be able list NFT on market.", async () => {
+    it("#5 should be able list NFT on market.", async () => {
 
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
@@ -89,12 +88,12 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    it("should not be able list NFT on market if token does not exist.", async () => {
+    it("#6 should not be able list NFT on market if token does not exist.", async () => {
         await utils.throws(contractInstance.listNFTOnMarket(0, 10, {from: alice}))
     })
 
 
-    it("should not be able list NFT on market if token does not belong to owner.", async () => {
+    it("#7 should not be able list NFT on market if token does not belong to owner.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:bob});
@@ -105,7 +104,7 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests:  removeNFTFromMarket()
      */
-    it("should be able to remove NFT on market if the NFT belongs to the owner", async () => {
+    it("#8 should be able to remove NFT on market if the NFT belongs to the owner", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -115,11 +114,11 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result.receipt.status, true);
     })
 
-    it("should not be able to remove NFT on market if token does not exist.", async () => {
+    it("#9 should not be able to remove NFT on market if token does not exist.", async () => {
         await utils.throws(contractInstance.removeNFTFromMarket(0, {from: alice}));
     })
 
-    it("should not be able to remove NFT on market if token does not belong to owner.", async () => {
+    it("#10 should not be able to remove NFT on market if token does not belong to owner.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -131,7 +130,7 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests:  purchaseNFT()
      */
-    it("buyer should receive NFT after sending the correct amount of funds.", async () => {
+    it("#11 buyer should receive NFT after sending the correct amount of funds.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -147,11 +146,16 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result, bob);
     })
 
-    // Need to fix
-    it("seller should receive correct amount of funds after their NFT is purchased.", async () => {
+
+    // NEED TO CHECK AGAIN
+
+    /**
+     * Tests purchaseNFT()
+     */
+
+    it("#12 seller should receive correct amount of funds after their NFT is purchased.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        
     
         await contractInstance.mint(gameId, itemId, {from:alice});
 
@@ -160,22 +164,24 @@ contract("AuxiunNFT", (accounts) => {
 
         // Get balance before the purchase
         const initialBalance = await web3.eth.getBalance(alice);
-        console.log("Initial: ", initialBalance)
-
-
+    
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:10, from: bob});
+      
+        // Alice should have a balance of initialBalance + 10
+        var expected = parseInt(initialBalance) + 10;
+  
+        console.log("Initial:  ", parseInt(initialBalance))
+        console.log("Expected: ", expected)
 
-        // Alice should have a balance of initialBalance + 100
         const result = await web3.eth.getBalance(alice);
-        let expected = parseInt(initialBalance) + 10;
 
-        console.log("Final:   ", result)
+        console.log("Final:    ", result)
         assert.equal(result, expected);
     })
 
 
-    it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
+    it("#13 should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -193,7 +199,7 @@ contract("AuxiunNFT", (accounts) => {
     * Tests: fetchNFTDataById()
     * 
     */
-    it("should get NFT data by tokenId", async () => {
+    it("#14 should get NFT data by tokenId", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -218,7 +224,7 @@ contract("AuxiunNFT", (accounts) => {
         * 4. array of token sellers 
         * 
      */
-    it("should get NFT data if they are listed on the market ", async () => {
+    it("#15 should get NFT data if they are listed on the market ", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
@@ -240,7 +246,7 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests: multiCallNFTsOnMarket() and _removeNFTfromMarket() 
      */
-   it("token should be removed from the market after a successful purchase.", async () => {
+   it("#16 token should be removed from the market after a successful purchase.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.mint(gameId, itemId, {from:alice});
