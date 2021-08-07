@@ -159,12 +159,15 @@ contract("AuxiunNFT", (accounts) => {
     
         await contractInstance.mint(gameId, itemId, {from:alice});
 
+       
+
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
 
         // Get balance before the purchase
         const initialBalance = await web3.eth.getBalance(alice);
-    
+
+        
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:10, from: bob});
       
@@ -177,7 +180,7 @@ contract("AuxiunNFT", (accounts) => {
         const result = await web3.eth.getBalance(alice);
 
         console.log("Final:    ", result)
-        assert.equal(result, expected);
+        assert.equal(result, expected.toString());
     })
 
 

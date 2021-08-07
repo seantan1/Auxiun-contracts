@@ -134,11 +134,14 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         require(id_to_marketDetails[tokenId].forSale, "NFT not for sale");
         require(id_to_marketDetails[tokenId].price <= msg.value, "Insufficient funds for purchase.");
 
-        // Remove NFT form market
+    
+        // Get seller Id
+        address seller = id_to_marketDetails[tokenId].seller;
+
+        // Remove NFT from market - do this before transferring ETH to prevent reentrancy
         _removeNFTfromMarket(tokenId);
 
         // Transfer fund from NFT buyer to NFT Seller
-        address seller = id_to_marketDetails[tokenId].seller;
         (bool success, ) =  seller.call{value: msg.value}("");
         require(success, "Failed to send ETH to Seller");
 
@@ -199,10 +202,10 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         selfdestruct(payable(owner()));
     }
 
-    receive() external payable {
-        // this function enables the contract to receive funds
-        // Nothing needed here
-    }
+    // receive() external payable {
+    //     // this function enables the contract to receive funds
+    //     // Nothing needed here
+    // }
 
     /** Needed for calling safeTransferFrom */
     function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
