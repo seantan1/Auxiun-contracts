@@ -1,10 +1,11 @@
 const AuxiunNFT = artifacts.require("AuxiunNFT")
 const utils = require("./helpers/utils")
+const BigNumber = require('bignumber.js');
 
 contract("AuxiunNFT", (accounts) => {
     let contractInstance;
 
-    let [alice, bob] = accounts;
+    let [alice, bob, charlie] = accounts;
 
     beforeEach(async () => {
         contractInstance = await AuxiunNFT.new();
@@ -156,30 +157,24 @@ contract("AuxiunNFT", (accounts) => {
     it("#12 seller should receive correct amount of funds after their NFT is purchased.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-    
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        const price = 1111
+        await contractInstance.mint(gameId, itemId, {from:charlie});
 
-       
-
-        // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
+        // Charlie lists NFT
+        await contractInstance.listNFTOnMarket(0, price, {from: charlie});
 
         // Get balance before the purchase
-        const initialBalance = await web3.eth.getBalance(alice);
+        const balance = await web3.eth.getBalance(charlie);
 
-        
         // Bob purchases NFT
-        await contractInstance.purchaseNFT(0, {value:10, from: bob});
+        await contractInstance.purchaseNFT(0, {value:price, from: bob});
       
-        // Alice should have a balance of initialBalance + 10
-        var expected = parseInt(initialBalance) + 10;
-  
-        console.log("Initial:  ", parseInt(initialBalance))
-        console.log("Expected: ", expected)
+        // Charlie should have a balance of initialBalance + price
+        var initialBalance = new BigNumber(balance)
+        var expected = initialBalance.plus(price);
 
-        const result = await web3.eth.getBalance(alice);
-
-        console.log("Final:    ", result)
+        // Get actual result
+        const result = await web3.eth.getBalance(charlie);
         assert.equal(result, expected.toString());
     })
 

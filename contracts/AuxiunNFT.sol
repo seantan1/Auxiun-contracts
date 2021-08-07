@@ -202,10 +202,10 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         selfdestruct(payable(owner()));
     }
 
-    // receive() external payable {
-    //     // this function enables the contract to receive funds
-    //     // Nothing needed here
-    // }
+    receive() external payable {
+        // this function enables the contract to receive funds
+        // Nothing needed here
+    }
 
     /** Needed for calling safeTransferFrom */
     function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
