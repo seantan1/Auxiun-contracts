@@ -148,8 +148,6 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    // NEED TO CHECK AGAIN
-
     /**
      * Tests purchaseNFT()
      */
