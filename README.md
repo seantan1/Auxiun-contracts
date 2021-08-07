@@ -2,7 +2,7 @@
 
 How to use and setup a working truffle environment:
 1. `truffle init`
-2. `npm intall`
+2. `npm install`
 3. Setup contract codes in the contracts folder
 4. Add infura, mnemonic, network details in truffle-config.js, remember to specify the version of the solc u want to use else u get an error when compiling.
 5. Add your mnemonic key inside a new .secrets file (eg. metamask wallet private key), add it to gitignore
