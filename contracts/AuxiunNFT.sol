@@ -36,7 +36,11 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // array which stores all transaction data
     TransactionHistory[] transactionHistory;
 
+    // transactionHistory counter for addresses to determine the multicall memory array size
     mapping(address => uint256) transactionHistoryCount;
+
+    // list of admin addresses authorized to mint tokens
+    mapping(address => bool) admins;
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
@@ -74,10 +78,24 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     }
 
     function mint(address to, string memory game_id, string memory item_id) external {
+        require(admins[msg.sender], "Not authorized to call this function.");
         uint256 tokenId = tokenIdCounter;
         tokenIdCounter++;
         id_to_metadata[tokenId] = Metadata(game_id, item_id);
         _safeMint(to, tokenId);
+    }
+
+    // functions to handle admins array
+    function addAdminAddress(address _address) external onlyOwner() {
+        admins[_address] = true;
+    }
+
+    function removeAdminAddress(address _address) external onlyOwner() {
+        admins[_address] = false;
+    }
+
+    function isAdminAddress(address _address) external view returns (bool) {
+        return admins[_address];
     }
 
     // String concatenation function
@@ -100,7 +118,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         for (uint i = 0; i < _be.length; i++) babcde[k++] = _be[i];
         return string(babcde);
     }
-
 
     // Modifers
     modifier tokenExists(uint256 tokenId) {
