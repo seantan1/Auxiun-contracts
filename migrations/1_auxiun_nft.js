@@ -1,5 +1,5 @@
-const Migrations = artifacts.require("Migrations");
+const AxiunNFT = artifacts.require("./AuxiunNFT.sol");
 
 module.exports = function (deployer) {
-  deployer.deploy(Migrations);
+  deployer.deploy(AxiunNFT);
 };
