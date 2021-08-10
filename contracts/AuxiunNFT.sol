@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
+
     struct Metadata {
         string game_id;
         string item_id;
@@ -17,6 +18,8 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         uint256 price;
         address seller;
     }
+
+
 
     // mapping of tokenId to market details
     mapping(uint256 => MarketDetails) id_to_marketDetails;
@@ -129,7 +132,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
 
    // Source: https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage/74007#74007
-    function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) {
+    function purchaseNFT(uint256 tokenId) public payable tokenExists(tokenId) returns(address, address, uint256, uint256) {
         require(id_to_marketDetails[tokenId].seller != msg.sender, "Can not purchase your own NFTs.");
         require(id_to_marketDetails[tokenId].forSale, "NFT not for sale");
         require(id_to_marketDetails[tokenId].price <= msg.value, "Insufficient funds for purchase.");
@@ -147,6 +150,9 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
         // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
+        
+        // Return some info about the transfer
+        return (msg.sender, seller, tokenId, msg.value);
     }
  
     // returns an array of token ids which are listed as forSale
