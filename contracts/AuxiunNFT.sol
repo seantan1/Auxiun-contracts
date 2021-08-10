@@ -19,7 +19,13 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         address seller;
     }
 
-
+    struct TransactionHistory {
+        uint256 tokenId;
+        address buyer;
+        address seller;
+        uint256 price;
+        uint256 timestamp;
+    }
 
     // mapping of tokenId to market details
     mapping(uint256 => MarketDetails) id_to_marketDetails;
@@ -27,6 +33,10 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // mapping of tokenId to metadata
     mapping(uint256 => Metadata) id_to_metadata;
 
+    // array which stores all transaction data
+    TransactionHistory[] transactionHistory;
+
+    mapping(address => uint256) transactionHistoryCount;
 
     // Base URI, aka API link to fetch further metadata of the token
     string private baseURI;
@@ -63,14 +73,11 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         return strConcat(_baseURI(), id_to_metadata[tokenId].game_id, "/", id_to_metadata[tokenId].item_id, "");
     }
 
-    function mint(
-        string memory game_id,
-        string memory item_id
-    ) external {
+    function mint(address to, string memory game_id, string memory item_id) external {
         uint256 tokenId = tokenIdCounter;
         tokenIdCounter++;
         id_to_metadata[tokenId] = Metadata(game_id, item_id);
-        _safeMint(msg.sender, tokenId);
+        _safeMint(to, tokenId);
     }
 
     // String concatenation function
@@ -137,9 +144,11 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         require(id_to_marketDetails[tokenId].forSale, "NFT not for sale");
         require(id_to_marketDetails[tokenId].price <= msg.value, "Insufficient funds for purchase.");
 
-    
         // Get seller Id
         address seller = id_to_marketDetails[tokenId].seller;
+
+        // get price
+        uint256 price = id_to_marketDetails[tokenId].price;
 
         // Remove NFT from market - do this before transferring ETH to prevent reentrancy
         _removeNFTfromMarket(tokenId);
@@ -150,6 +159,13 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
         // Transfer token to buyer
         _safeTransfer(address(this), msg.sender, tokenId, "");
+
+        // push transaction data into transactionHistory
+        transactionHistory.push(TransactionHistory(tokenId, msg.sender, seller, price, block.timestamp));
+
+        // increase transactionHistoryCount for both buyer and seller
+        transactionHistoryCount[msg.sender]++;
+        transactionHistoryCount[seller]++;
         
         // Return some info about the transfer
         return (msg.sender, seller, tokenId, msg.value);
@@ -177,6 +193,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     }
 
     /**
+    * Multicall function to fetch all NFTs listed for sale on the market
     * Returns 4 arrays of all tokens for sale which are:
     * 1. array of tokenIds
     * 2. array of tokenURIs
@@ -202,6 +219,61 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         }
         
         return (tokenIds, tokenURIs, tokenPrices, tokenSellers);
+    }
+
+    // overloaded Multicall function to fetch NFTs listed on sale for a specific user's address
+    function multiCallNFTsOnMarket(address seller) external view returns(uint256[] memory, string[] memory, uint256[] memory, address[] memory) {
+        // initialize tokenIds' array length
+        uint256[] memory tokenIds = new uint256[](balanceOf(seller));
+        // fetch the tokenIds on the market
+        tokenIds = _fetchTokenIdsOnMarket();
+
+        // initialize array for tokenURIs, prices and sellers
+        string[] memory tokenURIs = new string[](balanceOf(seller));
+        uint256[] memory tokenPrices = new uint256[](balanceOf(seller));
+        address[] memory tokenSellers = new address[](balanceOf(seller));
+
+        // for loop to fetch all data of tokenIds and push into the 3 arrays
+        uint256 counter = 0;
+        for (uint256 i = 0; i < NFTsOnMarket; i++) {
+            if (seller == ownerOf(tokenIds[i])) {
+                tokenURIs[counter] = tokenURI(tokenIds[i]);
+                tokenPrices[counter] = id_to_marketDetails[tokenIds[i]].price;
+                tokenSellers[counter] = id_to_marketDetails[tokenIds[i]].seller;
+                counter++;
+            }
+        }
+        
+        return (tokenIds, tokenURIs, tokenPrices, tokenSellers);
+    }
+
+    // Multicall functions to fetch transaction data
+    // fetch transaction data by user's address
+    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory) {
+        // initialize array for tokenURIs, prices and sellers
+        uint256[] memory transactionIds = new uint256[](transactionHistoryCount[user]);
+        uint256[] memory tokenIds = new uint256[](transactionHistoryCount[user]);
+        address[] memory buyers = new address[](transactionHistoryCount[user]);
+        address[] memory sellers = new address[](transactionHistoryCount[user]);
+        uint256[] memory prices = new uint256[](transactionHistoryCount[user]);
+        uint256[] memory timestamps = new uint256[](transactionHistoryCount[user]);
+
+        // for loop to fetch all data of tokenIds and push into the 3 arrays
+        uint256 counter = 0;
+        for (uint256 i = 0; i < transactionHistory.length; i++) {
+            if (user == transactionHistory[i].buyer || user == transactionHistory[i].seller) {
+                transactionIds[counter] = i;
+                tokenIds[counter] = transactionHistory[i].tokenId;
+                buyers[counter] = transactionHistory[i].buyer;
+                sellers[counter] = transactionHistory[i].seller;
+                prices[counter] = transactionHistory[i].price;
+                timestamps[counter] = transactionHistory[i].timestamp;
+
+                counter++;
+            }
+        }
+        
+        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps);
     }
 
     function kill() public onlyOwner {
