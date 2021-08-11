@@ -285,7 +285,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
                 prices[counter] = transactionHistory[i].price;
                 timestamps[counter] = transactionHistory[i].timestamp;
 
-                determine transactionType
+                // determine transactionType
                 if (user == transactionHistory[i].buyer) {
                     transactionType[counter] = true;
                 }
@@ -295,7 +295,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
                 counter++;
             }
         }
-        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps);
+        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps, transactionType);
     }
 
     function kill() public onlyOwner {
