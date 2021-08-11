@@ -341,8 +341,6 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result[2], "")
     })
 
-
-
     /** Tests multiCallTransactionDataByUser() */
     it("should get correct transaction data by user", async () => {
 
