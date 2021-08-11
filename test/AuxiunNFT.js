@@ -30,37 +30,37 @@ contract("AuxiunNFT", (accounts) => {
 
     /** Tests addAdminAddress(), isAdminAddress */
 
-    it("should be able to add admins, if the sender is also the owner of the contract"), async () => {
-        await contractInstance.addAdminAddress(alice, {from: alice});
+    it("should be able to add admins, if the sender is also the owner of the contract", async () => {
+        await contractInstance.addAdminAddress(alice);
         const result = await contractInstance.isAdminAddress(alice);
         assert.equal(result, true)
-    }
+    })
 
     
     /** Tests mint()*/
-    it("should not mint tokens if sender is not an admin"), async () => {
-        let gameId = "bsg_escape_from_tarkov";
-        let itemId = "btc";
-        assert.throws(contractInstance.mint(delta, gameId, itemId, {from: delta}))
-    }
+    // it("should not mint tokens if sender is not an admin", async () => {
+    //     let gameId = "bsg_escape_from_tarkov";
+    //     let itemId = "btc";
+    //     await assert.throws(contractInstance.mint(delta, gameId, itemId, {from: delta}))
+    // })
 
     /** Tests mint(), addAdminAddress(), isAdminAddress() */
-    it("should mint tokens if sender is an admin"), async () => {
+    it("should mint tokens if sender is an admin", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         await contractInstance.addAdminAddress(alice);
         const result = await contractInstance.mint(alice, gameId, itemId, {from: alice})
         assert.equal(result.receipt.status, true)
-    }
+    })
 
 
     /** Tests addAdmin(), removeAdmin() */
-    it("should remove an admin, if the sender is the owner"), async () => {
+    it("should remove an admin, if the sender is the owner", async () => {
         await contractInstance.addAdminAddress(bob, {from: alice});
         await contractInstance.removeAdminAddress(bob, {from: alice})
-        const result = contractInstance.isAdminAddress(bob);
+        const result = await contractInstance.isAdminAddress(bob);
         assert.equal(result, false)
-    }
+    })
 
     /* 
         TestsL tokenURI()
@@ -303,29 +303,10 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    /** Tests purchaseNFT() */
-    it("purchaseNFT should return (buyer, seller, tokenID, amount)"), async () => {
-        let gameId = "bsg_escape_from_tarkov";
-        let itemId = "btc";
-        await contractInstance.addAdminAddress(alice);
-        await contractInstance.mint(alice, gameId, itemId, {from:alice});
-
-        // Alice lists her NFT
-        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
-
-        // Bob purchases NFT
-        const result = await contractInstance.purchaseNFT(0, {value:10, from: bob});
-        
-        // Should return buyer, seller, tokenID, and amount sent
-        assert.equal(result[0], alice) 
-        assert.equal(result[1], bob)    
-        assert.equal(result[2], '0')
-        assert.equal(result[3], '10')
-    }
-
+   
 
     /** Tests: multiCallNFTsOnMarket(seller) */
-    it("should get token data by seller when they have listed items"), async () => {
+    it("should get token data by seller when they have listed items", async () => {
         let gameId_1 = "bsg_escape_from_tarkov";
         let itemId_1 = "btc";
         let gameId_2 = "bethesda_skyrim";
@@ -341,26 +322,33 @@ contract("AuxiunNFT", (accounts) => {
         const tokenURI_2 = await contractInstance.tokenURI(1)
         const result = await contractInstance.multiCallNFTsOnMarket(alice);
 
-        assert.equal(result[0][0], '0')
-        assert.equal(result[0][1], '1')
+        for(var i = 0; i < 4; ++i){
+            console.log(result[i])
+        }
+        // console.log(result)
+        assert.equal(result[0][0], 0)
+        assert.equal(result[0][1], 1)
         assert.equal(result[1][0], tokenURI_1)
         assert.equal(result[1][1], tokenURI_2)
-        assert.equal(result[2][0], '10')
-        assert.equal(result[2][1], '20')
-    }
+        assert.equal(result[2][0].toString(), '10')
+        assert.equal(result[2][1].toString(), '20')
+    })
 
     
     /** Tests: multiCallNFTsOnMarket(seller) */
-    it("should not get any token data if a user has not listed any"), async () => {
+    it("should not get any token data if a user has not listed any", async () => {
         const result = await contractInstance.multiCallNFTsOnMarket(alice)
-        assert.equal(result, '')
-    }
+        assert.equal(result[0], "")
+        assert.equal(result[1], "")
+        assert.equal(result[2], "")
+        assert.equal(result[3], "")
+    })
 
 
 
     /** Tests multiCallTransactionDataByUser() */
-    it("should get correct transaction data by user"), async () => {
+    it("should get correct transaction data by user", async () => {
 
-    }
+    })
 
 })
