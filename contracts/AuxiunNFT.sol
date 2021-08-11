@@ -51,6 +51,8 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // Number of NFTs on market (Maybe for future use)
     uint256 NFTsOnMarket = 0;
 
+    // Number of NFTs on market by address
+    mapping(address => uint256) NFTsOnMarketByAddress;
  
     constructor() ERC721("AuxiunNFT", "AUXN") {
         // TODO: Setup database api server and set the link here, remember to add the "/" at the end of the uri
@@ -131,8 +133,10 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     }
 
     // Helper Functions for NFTs on the market.
-    function _removeNFTfromMarket(uint tokenId) private tokenExists(tokenId) {
+    function _removeNFTfromMarket(uint tokenId, address _address) private tokenExists(tokenId) {
         id_to_marketDetails[tokenId] = MarketDetails(false, 0, address(0));
+        // decrease the number of NFTs on market of the user
+        NFTsOnMarketByAddress[_address]--;
         NFTsOnMarket--;
     }
   
@@ -140,6 +144,8 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // Functions for market place interactions.
     function listNFTOnMarket(uint256 tokenId, uint256 price) external payable tokenExists(tokenId) belongsToSender(tokenId){
         id_to_marketDetails[tokenId] = MarketDetails(true, price, msg.sender);
+        // increase the number of NFTs on market of the user
+        NFTsOnMarketByAddress[msg.sender]++;
         NFTsOnMarket++;
 
         // transfer ownership of tokenId to this contract
@@ -148,7 +154,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
     function removeNFTFromMarket(uint256 tokenId) external tokenExists(tokenId) {
         require(id_to_marketDetails[tokenId].seller == msg.sender, "Not the original owner of this NFT.");
-        _removeNFTfromMarket(tokenId);
+        _removeNFTfromMarket(tokenId, msg.sender);
 
         // transfer token back to owner
         _safeTransfer(address(this), msg.sender, tokenId, "");
@@ -168,7 +174,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         uint256 price = id_to_marketDetails[tokenId].price;
 
         // Remove NFT from market - do this before transferring ETH to prevent reentrancy
-        _removeNFTfromMarket(tokenId);
+        _removeNFTfromMarket(tokenId, id_to_marketDetails[tokenId].seller);
 
         // Transfer fund from NFT buyer to NFT Seller
         (bool success, ) =  seller.call{value: msg.value}("");
@@ -210,8 +216,36 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     }
 
     /**
+    * Multicall function to fetch all NFTs owned by an address
+    * Returns 2 arrays which are:
+    * 1. array of tokenIds owned by the address
+    * 2. array of tokenURIs of the respective tokenIds
+    */
+    function multiCallNFTsOwnedByAddress(address _address) external view returns(uint256[] memory, string[] memory) {
+        // initialize array lengths
+        uint256[] memory tokenIds = new uint256[](balanceOf(_address));
+        string[] memory tokenURIs = new string[](balanceOf(_address));
+
+        // since tokenId starts with 0, we need to +1 to the number
+        uint256 totalNumberOfNFTs = tokenIdCounter + 1;
+
+        uint256 counter = 0;
+
+        // for loop to fetch all data of tokenIds and push into the 3 arrays
+        for (uint256 i = 0; i < totalNumberOfNFTs; i++) {
+            if (_address == ownerOf(i)) {
+                tokenIds[counter] = i;
+                tokenURIs[counter] = tokenURI(i);
+                counter++;
+            }
+        }
+        
+        return (tokenIds, tokenURIs);
+    }
+
+    /**
     * Multicall function to fetch all NFTs listed for sale on the market
-    * Returns 4 arrays of all tokens for sale which are:
+    * Returns 4 arrays which are:
     * 1. array of tokenIds
     * 2. array of tokenURIs
     * 3. array of token prices
@@ -241,19 +275,19 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     // overloaded Multicall function to fetch NFTs listed on sale for a specific user's address
     function multiCallNFTsOnMarket(address seller) external view returns(uint256[] memory, string[] memory, uint256[] memory, address[] memory) {
         // initialize tokenIds' array length
-        uint256[] memory tokenIds = new uint256[](balanceOf(seller));
+        uint256[] memory tokenIds = new uint256[](NFTsOnMarketByAddress[seller]);
         // fetch the tokenIds on the market
         tokenIds = _fetchTokenIdsOnMarket();
 
         // initialize array for tokenURIs, prices and sellers
-        string[] memory tokenURIs = new string[](balanceOf(seller));
-        uint256[] memory tokenPrices = new uint256[](balanceOf(seller));
-        address[] memory tokenSellers = new address[](balanceOf(seller));
+        string[] memory tokenURIs = new string[](NFTsOnMarketByAddress[seller]);
+        uint256[] memory tokenPrices = new uint256[](NFTsOnMarketByAddress[seller]);
+        address[] memory tokenSellers = new address[](NFTsOnMarketByAddress[seller]);
 
         // for loop to fetch all data of tokenIds and push into the 3 arrays
         uint256 counter = 0;
         for (uint256 i = 0; i < NFTsOnMarket; i++) {
-            if (seller == ownerOf(tokenIds[i])) {
+            if (seller == id_to_marketDetails[tokenIds[i]].seller) {
                 tokenURIs[counter] = tokenURI(tokenIds[i]);
                 tokenPrices[counter] = id_to_marketDetails[tokenIds[i]].price;
                 tokenSellers[counter] = id_to_marketDetails[tokenIds[i]].seller;
@@ -264,8 +298,18 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         return (tokenIds, tokenURIs, tokenPrices, tokenSellers);
     }
 
-    // Multicall functions to fetch transaction data
-    // fetch transaction data by user's address
+    /**
+    * Multicall functions to fetch transaction data
+    * fetch transaction data by user's address
+    * Returns 7 arrays sale which are:
+    * 1. array of transactionIds
+    * 2. array of tokenIds
+    * 3. array of buyers
+    * 4. array of sellers
+    * 5. array of prices
+    * 6. array of timestamps
+    * 7. array of transacitonType - true: buy ; false: sell
+    */
     function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
         // initialize array for tokenURIs, prices and sellers
         uint256[] memory transactionIds = new uint256[](transactionHistoryCount[user]);
