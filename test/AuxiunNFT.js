@@ -5,7 +5,7 @@ const BigNumber = require('bignumber.js');
 contract("AuxiunNFT", (accounts) => {
     let contractInstance;
 
-    let [alice, bob, charlie] = accounts;
+    let [alice, bob, charlie, delta] = accounts;
 
     beforeEach(async () => {
         contractInstance = await AuxiunNFT.new();
@@ -19,7 +19,7 @@ contract("AuxiunNFT", (accounts) => {
         Expected Result: Transaction should be successful 
         i.e receipt status == true.
     */
-    it("#1 should set the baseURI.", async () => {
+    it("should set the baseURI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com";
 
@@ -28,32 +28,51 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result.receipt.status, true);
     })
 
-    /* 
-        Expected Result: Transaction should be successful 
-        i.e receipt status == true.
-    */
-    it("#2 should mint an asset, given a gameId and itemId.", async () => {
-        // Set up
+    /** Tests addAdminAddress(), isAdminAddress */
+
+    it("should be able to add admins, if the sender is also the owner of the contract"), async () => {
+        await contractInstance.addAdminAddress(alice, {from: alice});
+        const result = await contractInstance.isAdminAddress(alice);
+        assert.equal(result, true)
+    }
+
+    
+    /** Tests mint()*/
+    it("should not mint tokens if sender is not an admin"), async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
+        assert.throws(contractInstance.mint(delta, gameId, itemId, {from: delta}))
+    }
 
-        // Test mint()
-        const result = await contractInstance.mint(gameId, itemId);
-        assert.equal(result.receipt.status, true);
-    })
+    /** Tests mint(), addAdminAddress(), isAdminAddress() */
+    it("should mint tokens if sender is an admin"), async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.addAdminAddress(alice);
+        const result = await contractInstance.mint(alice, gameId, itemId, {from: alice})
+        assert.equal(result.receipt.status, true)
+    }
+
+
+    /** Tests addAdmin(), removeAdmin() */
+    it("should remove an admin, if the sender is the owner"), async () => {
+        await contractInstance.addAdminAddress(bob, {from: alice});
+        await contractInstance.removeAdminAddress(bob, {from: alice})
+        const result = contractInstance.isAdminAddress(bob);
+        assert.equal(result, false)
+    }
 
     /* 
-        Expected Result: TokenURI should return
-        a URI structured like the following -
-        "<baseURI> + <gameId> + / + <itemId>".
+        TestsL tokenURI()
     */
-    it("#3 should return an appropriate token URI.", async () => {
+    it("should return an appropriate token URI.", async () => {
         // Set up
         let baseURI = "https://auxiun-nft-market.com/";
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
+        await contractInstance.addAdminAddress(alice);
         await contractInstance.setBaseURI(baseURI)
-        await contractInstance.mint(gameId, itemId);
+        await contractInstance.mint(alice, gameId, itemId);
 
         // Test tokenURI()
         const result = await contractInstance.tokenURI(0);
@@ -65,7 +84,7 @@ contract("AuxiunNFT", (accounts) => {
         Expected Result: TokenURI() should throw an error after 
         attempting to get a token URI from a non-existant asset.
     */
-    it("#4 should throw an error after attempting to access a non-existent asset.", async () => {
+    it("should throw an error after attempting to access a non-existent asset.", async () => {
            // Set up
            let baseURI = "https://auxiun-nft-market.com/";
            await contractInstance.setBaseURI(baseURI)
@@ -78,26 +97,28 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests: listNFTOnMarket(tokenId, price) 
      */ 
-    it("#5 should be able list NFT on market.", async () => {
+    it("should be able list NFT on market.", async () => {
 
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
        
         const result = await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         assert.equal(result.receipt.status, true);
     })
 
 
-    it("#6 should not be able list NFT on market if token does not exist.", async () => {
+    it("should not be able list NFT on market if token does not exist.", async () => {
         await utils.throws(contractInstance.listNFTOnMarket(0, 10, {from: alice}))
     })
 
 
-    it("#7 should not be able list NFT on market if token does not belong to owner.", async () => {
+    it("should not be able list NFT on market if token does not belong to owner.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:bob});
+        await contractInstance.addAdminAddress(bob);
+        await contractInstance.mint(bob, gameId, itemId, {from:bob});
         await utils.throws(contractInstance.listNFTOnMarket(0, 10, {from: alice}))
     })
 
@@ -105,24 +126,26 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests:  removeNFTFromMarket()
      */
-    it("#8 should be able to remove NFT on market if the NFT belongs to the owner", async () => {
+    it("should be able to remove NFT on market if the NFT belongs to the owner", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
        
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         const result = await contractInstance.removeNFTFromMarket(0, {from: alice})
         assert.equal(result.receipt.status, true);
     })
 
-    it("#9 should not be able to remove NFT on market if token does not exist.", async () => {
+    it("should not be able to remove NFT on market if token does not exist.", async () => {
         await utils.throws(contractInstance.removeNFTFromMarket(0, {from: alice}));
     })
 
-    it("#10 should not be able to remove NFT on market if token does not belong to owner.", async () => {
+    it("should not be able to remove NFT on market if token does not belong to owner.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         await utils.throws(contractInstance.removeNFTFromMarket(0, {from: bob}))
     })
@@ -131,10 +154,11 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests:  purchaseNFT()
      */
-    it("#11 buyer should receive NFT after sending the correct amount of funds.", async () => {
+    it("buyer should receive NFT after sending the correct amount of funds.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
 
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
@@ -152,11 +176,12 @@ contract("AuxiunNFT", (accounts) => {
      * Tests purchaseNFT()
      */
 
-    it("#12 seller should receive correct amount of funds after their NFT is purchased.", async () => {
+    it("seller should receive correct amount of funds after their NFT is purchased.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        const price = 1111
-        await contractInstance.mint(gameId, itemId, {from:charlie});
+        const price = 1111;
+        await contractInstance.addAdminAddress(charlie);
+        await contractInstance.mint(charlie, gameId, itemId, {from:charlie});
 
         // Charlie lists NFT
         await contractInstance.listNFTOnMarket(0, price, {from: charlie});
@@ -177,10 +202,11 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    it("#13 should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
+    it("should throw an error if an attempt to purchase an NFT was made with insufficient funds.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
 
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
@@ -195,10 +221,14 @@ contract("AuxiunNFT", (accounts) => {
     * Tests: fetchNFTDataById()
     * 
     */
-    it("#14 should get NFT data by tokenId", async () => {
+    it("should get NFT data by tokenId", async () => {
+        
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        let baseURI = "https://auxiun-nft-market.com/";
+        await contractInstance.setBaseURI(baseURI)
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
         const correctURI = await contractInstance.tokenURI(0);
 
         // Alice lists her NFT
@@ -220,10 +250,13 @@ contract("AuxiunNFT", (accounts) => {
         * 4. array of token sellers 
         * 
      */
-    it("#15 should get NFT data if they are listed on the market ", async () => {
+    it("should get NFT data if they are listed on the market ", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        let baseURI = "https://auxiun-nft-market.com/";
+        await contractInstance.setBaseURI(baseURI)
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
         const correctURI = await contractInstance.tokenURI(0);
 
         // Alice lists her NFT
@@ -242,10 +275,11 @@ contract("AuxiunNFT", (accounts) => {
     /**
      * Tests: multiCallNFTsOnMarket() and _removeNFTfromMarket() 
      */
-   it("#16 token should be removed from the market after a successful purchase.", async () => {
+   it("token should be removed from the market after a successful purchase.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.mint(gameId, itemId, {from:alice});
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
 
         // Alice lists her NFT
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
@@ -266,8 +300,67 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(multiCallNFTsOnMarket_result[1], '')
         assert.equal(multiCallNFTsOnMarket_result[2], '')
         assert.equal(multiCallNFTsOnMarket_result[3], '')
-
-
     })
+
+
+    /** Tests purchaseNFT() */
+    it("purchaseNFT should return (buyer, seller, tokenID, amount)"), async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId, itemId, {from:alice});
+
+        // Alice lists her NFT
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
+
+        // Bob purchases NFT
+        const result = await contractInstance.purchaseNFT(0, {value:10, from: bob});
+        
+        // Should return buyer, seller, tokenID, and amount sent
+        assert.equal(result[0], alice) 
+        assert.equal(result[1], bob)    
+        assert.equal(result[2], '0')
+        assert.equal(result[3], '10')
+    }
+
+
+    /** Tests: multiCallNFTsOnMarket(seller) */
+    it("should get token data by seller when they have listed items"), async () => {
+        let gameId_1 = "bsg_escape_from_tarkov";
+        let itemId_1 = "btc";
+        let gameId_2 = "bethesda_skyrim";
+        let itemId_2 = "daedric_sword";
+        let baseURI = "https://auxiun-nft-market.com/";
+        await contractInstance.setBaseURI(baseURI)
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.mint(alice, gameId_1, itemId_1, {from:alice});
+        await contractInstance.mint(alice, gameId_2, itemId_2, {from:alice});
+        await contractInstance.listNFTOnMarket(0, 10, {from: alice});
+        await contractInstance.listNFTOnMarket(1, 20, {from: alice});
+        const tokenURI_1 = await contractInstance.tokenURI(0)
+        const tokenURI_2 = await contractInstance.tokenURI(1)
+        const result = await contractInstance.multiCallNFTsOnMarket(alice);
+
+        assert.equal(result[0][0], '0')
+        assert.equal(result[0][1], '1')
+        assert.equal(result[1][0], tokenURI_1)
+        assert.equal(result[1][1], tokenURI_2)
+        assert.equal(result[2][0], '10')
+        assert.equal(result[2][1], '20')
+    }
+
+    
+    /** Tests: multiCallNFTsOnMarket(seller) */
+    it("should not get any token data if a user has not listed any"), async () => {
+        const result = await contractInstance.multiCallNFTsOnMarket(alice)
+        assert.equal(result, '')
+    }
+
+
+
+    /** Tests multiCallTransactionDataByUser() */
+    it("should get correct transaction data by user"), async () => {
+
+    }
 
 })
