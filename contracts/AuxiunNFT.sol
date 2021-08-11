@@ -266,7 +266,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
     // Multicall functions to fetch transaction data
     // fetch transaction data by user's address
-    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory) {
+    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
         // initialize array for tokenURIs, prices and sellers
         uint256[] memory transactionIds = new uint256[](transactionHistoryCount[user]);
         uint256[] memory tokenIds = new uint256[](transactionHistoryCount[user]);
@@ -274,6 +274,9 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         address[] memory sellers = new address[](transactionHistoryCount[user]);
         uint256[] memory prices = new uint256[](transactionHistoryCount[user]);
         uint256[] memory timestamps = new uint256[](transactionHistoryCount[user]);
+        // transactionType = true: it is a buy transaction for the user
+        // transacitonType = false: it is a sell transaction for the user
+        bool[] memory transactionType = new bool[](transactionHistoryCount[user]);
 
         // for loop to fetch all data of tokenIds and push into the 3 arrays
         uint256 counter = 0;
@@ -286,11 +289,19 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
                 prices[counter] = transactionHistory[i].price;
                 timestamps[counter] = transactionHistory[i].timestamp;
 
+                // determine transactionType
+                if (user == transactionHistory[i].buyer) {
+                    transactionType[counter] = true;
+                }
+                else {
+                    transactionType[counter] = false;
+                }
+
                 counter++;
             }
         }
         
-        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps);
+        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps, transactionType);
     }
 
     function kill() public onlyOwner {
