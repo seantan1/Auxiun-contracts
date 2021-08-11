@@ -313,21 +313,19 @@ contract("AuxiunNFT", (accounts) => {
         let itemId_2 = "daedric_sword";
         let baseURI = "https://auxiun-nft-market.com/";
         await contractInstance.setBaseURI(baseURI)
-        await contractInstance.addAdminAddress(alice);
+        await contractInstance.addAdminAddress(alice, {from: alice});
         await contractInstance.mint(alice, gameId_1, itemId_1, {from:alice});
         await contractInstance.mint(alice, gameId_2, itemId_2, {from:alice});
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         await contractInstance.listNFTOnMarket(1, 20, {from: alice});
         const tokenURI_1 = await contractInstance.tokenURI(0)
         const tokenURI_2 = await contractInstance.tokenURI(1)
-        const result = await contractInstance.multiCallNFTsOnMarket(alice);
 
-        for(var i = 0; i < 4; ++i){
-            console.log(result[i])
-        }
-        // console.log(result)
-        assert.equal(result[0][0], 0)
-        assert.equal(result[0][1], 1)
+
+        const result = await contractInstance.multiCallNFTsOnMarket(alice);
+        
+        assert.equal(result[0][0].toString(), "0")
+        assert.equal(result[0][1].toString(), "1")
         assert.equal(result[1][0], tokenURI_1)
         assert.equal(result[1][1], tokenURI_2)
         assert.equal(result[2][0].toString(), '10')
@@ -341,7 +339,6 @@ contract("AuxiunNFT", (accounts) => {
         assert.equal(result[0], "")
         assert.equal(result[1], "")
         assert.equal(result[2], "")
-        assert.equal(result[3], "")
     })
 
 
