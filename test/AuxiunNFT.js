@@ -343,7 +343,30 @@ contract("AuxiunNFT", (accounts) => {
 
     /** Tests multiCallTransactionDataByUser() */
     it("should get correct transaction data by user", async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        const price = 100;
+        await contractInstance.addAdminAddress(charlie);
+        await contractInstance.mint(charlie, gameId, itemId, {from:charlie});
 
+        // Charlie lists NFT
+        await contractInstance.listNFTOnMarket(0, price, {from: charlie});
+
+        // Bob purchases NFT
+        await contractInstance.purchaseNFT(0, {value:price, from: bob});
+
+        const result = await multiCallTransactionDataByUser(charlie);
+        // transactionIds, tokenIds, buyers, sellers, prices, timestamps, transactionType
+        
+        assert.equal(result[0][0].toString(), '0')
+        assert.equal(result[1][0].toString(), '0')
+        assert.equal(result[2][0].toString(), bob)
+        assert.equal(result[3][0].toString(), charlie)
+        assert.equal(result[4][0].toString(), price.toString())
+        // Dont need to compare timestamps i.e result[5]
+        assert.equal(result[6][0].toString(), true)
+
+ 
     })
 
 })
