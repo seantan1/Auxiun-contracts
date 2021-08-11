@@ -38,11 +38,11 @@ contract("AuxiunNFT", (accounts) => {
 
     
     /** Tests mint()*/
-    // it("should not mint tokens if sender is not an admin", async () => {
-    //     let gameId = "bsg_escape_from_tarkov";
-    //     let itemId = "btc";
-    //     await assert.throws(contractInstance.mint(delta, gameId, itemId, {from: delta}))
-    // })
+    it("should not mint tokens if sender is not an admin", async () => {
+        let gameId = "bsg_escape_from_tarkov";
+        let itemId = "btc";
+        await utils.throws(contractInstance.mint(delta, gameId, itemId, {from: delta}))
+    })
 
     /** Tests mint(), addAdminAddress(), isAdminAddress() */
     it("should mint tokens if sender is an admin", async () => {
@@ -366,7 +366,6 @@ contract("AuxiunNFT", (accounts) => {
         // Dont need to compare timestamps i.e result[5]
         assert.equal(result[6][0].toString(), true)
 
- 
     })
 
 })
