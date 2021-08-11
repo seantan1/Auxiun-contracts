@@ -310,9 +310,8 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     * 6. array of timestamps
     * 7. array of transacitonType - true: buy ; false: sell
     */
-    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
+    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
         // initialize array for tokenURIs, prices and sellers
-        uint256[] memory transactionIds = new uint256[](transactionHistoryCount[user]);
         uint256[] memory tokenIds = new uint256[](transactionHistoryCount[user]);
         address[] memory buyers = new address[](transactionHistoryCount[user]);
         address[] memory sellers = new address[](transactionHistoryCount[user]);
@@ -326,7 +325,6 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
         uint256 counter = 0;
         for (uint256 i = 0; i < transactionHistory.length; i++) {
             if (user == transactionHistory[i].buyer || user == transactionHistory[i].seller) {
-                transactionIds[counter] = i;
                 tokenIds[counter] = transactionHistory[i].tokenId;
                 buyers[counter] = transactionHistory[i].buyer;
                 sellers[counter] = transactionHistory[i].seller;
@@ -345,7 +343,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
             }
         }
         
-        return (transactionIds, tokenIds, buyers, sellers, prices, timestamps, transactionType);
+        return (tokenIds, buyers, sellers, prices, timestamps, transactionType);
     }
 
     function kill() public onlyOwner {
