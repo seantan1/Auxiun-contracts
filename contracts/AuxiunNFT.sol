@@ -329,60 +329,17 @@ contract AuxiunNFTMulticall {
         return (tokenIds, tokenURIs, tokenPrices, tokenSellers);
     }
 
-    /**
-    * Multicall functions to fetch transaction data
-    * fetch transaction data by user's address
-    * Returns 6 arrays sale which are:
-    * 1. array of tokenIds
-    * 2. array of buyers
-    * 3. array of sellers
-    * 4. array of prices
-    * 5. array of timestamps
-    * 6. array of transacitonType - true: buy ; false: sell
-    */
-    // function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
-    //     // initialize return arrays
-    //     uint256[] memory tokenIds = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
-    //     address[] memory buyers = new address[](auxiunNFTContract.transactionHistoryCount(user));
-    //     address[] memory sellers = new address[](auxiunNFTContract.transactionHistoryCount(user));
-    //     uint256[] memory prices = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
-    //     uint256[] memory timestamps = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
-    //     // transactionType = true: it is a buy transaction for the user
-    //     // transacitonType = false: it is a sell transaction for the user
-    //     bool[] memory transactionType = new bool[](auxiunNFTContract.transactionHistoryCount(user));
+  
 
-    //     // for loop to fetch all data of tokenIds and push into the arrays
-    //     uint256 counter = 0;
-    //     for (uint256 i = 0; i < auxiunNFTContract.getTransactionHistoryLength(); i++) {
-    //         uint256 _tokenId;
-    //         address _buyer;
-    //         address _seller;
-    //         uint256 _price;
-    //         uint256 _timestamp;
-    //         (_tokenId, _buyer, _seller, _price, _timestamp) = auxiunNFTContract.transactionHistory(i);
-    //         if (user == _buyer|| user == _seller) {
-    //             tokenIds[counter] = _tokenId;
-    //             buyers[counter] = _buyer;
-    //             sellers[counter] = _seller;
-    //             prices[counter] = _price;
-    //             timestamps[counter] = _timestamp;
-
-    //             // determine transactionType
-    //             if (user == _buyer) {
-    //                 transactionType[counter] = true;
-    //             }
-    //             else {
-    //                 transactionType[counter] = false;
-    //             }
-    //             counter++;
-    //         }
-    //     }
-        
-    //     return (tokenIds, buyers, sellers, prices, timestamps, transactionType);
-    // }
-
-    function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
-        return (singleCallTransactionDataByUserTokenIds(user), singleCallTransactionDataByUserBuyers(user), singleTransactionDataByUserSellers(user), singleCallTransactionDataByUserPrices(user), singleCallTransactionDataByUserTimestamps(user), singleCallTransactionDataByUserTransactionType(user));
+    function multiCallTransactionDataByUser(address user) external view 
+    returns(uint256[] memory, address[] memory, address[] memory,
+             uint256[] memory, uint256[] memory, bool[] memory) {
+        return (singleCallTransactionDataByUserTokenIds(user), 
+                singleCallTransactionDataByUserBuyers(user), 
+                singleTransactionDataByUserSellers(user), 
+                singleCallTransactionDataByUserPrices(user), 
+                singleCallTransactionDataByUserTimestamps(user), 
+                singleCallTransactionDataByUserTransactionType(user));
     }
 
     // single functions to be combined in the multiCallTransactionDataByUser() multicall function
@@ -506,6 +463,60 @@ contract AuxiunNFTMulticall {
         }
         return transactionType;
     }
+}
+
+  /**
+    * Multicall functions to fetch transaction data
+    * fetch transaction data by user's address
+    * Returns 6 arrays sale which are:
+    * 1. array of tokenIds
+    * 2. array of buyers
+    * 3. array of sellers
+    * 4. array of prices
+    * 5. array of timestamps
+    * 6. array of transacitonType - true: buy ; false: sell
+    */
+    // function multiCallTransactionDataByUser(address user) external view returns(uint256[] memory, address[] memory, address[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
+    //     // initialize return arrays
+    //     uint256[] memory tokenIds = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
+    //     address[] memory buyers = new address[](auxiunNFTContract.transactionHistoryCount(user));
+    //     address[] memory sellers = new address[](auxiunNFTContract.transactionHistoryCount(user));
+    //     uint256[] memory prices = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
+    //     uint256[] memory timestamps = new uint256[](auxiunNFTContract.transactionHistoryCount(user));
+    //     // transactionType = true: it is a buy transaction for the user
+    //     // transacitonType = false: it is a sell transaction for the user
+    //     bool[] memory transactionType = new bool[](auxiunNFTContract.transactionHistoryCount(user));
+
+    //     // for loop to fetch all data of tokenIds and push into the arrays
+    //     uint256 counter = 0;
+    //     for (uint256 i = 0; i < auxiunNFTContract.getTransactionHistoryLength(); i++) {
+    //         uint256 _tokenId;
+    //         address _buyer;
+    //         address _seller;
+    //         uint256 _price;
+    //         uint256 _timestamp;
+    //         (_tokenId, _buyer, _seller, _price, _timestamp) = auxiunNFTContract.transactionHistory(i);
+    //         if (user == _buyer|| user == _seller) {
+    //             tokenIds[counter] = _tokenId;
+    //             buyers[counter] = _buyer;
+    //             sellers[counter] = _seller;
+    //             prices[counter] = _price;
+    //             timestamps[counter] = _timestamp;
+
+    //             // determine transactionType
+    //             if (user == _buyer) {
+    //                 transactionType[counter] = true;
+    //             }
+    //             else {
+    //                 transactionType[counter] = false;
+    //             }
+    //             counter++;
+    //         }
+    //     }
+        
+    //     return (tokenIds, buyers, sellers, prices, timestamps, transactionType);
+    // }
+
 
     // function multiCallTransactionDataByUserPartA(address user) internal view returns(uint256[] memory,  address[] memory, address[] memory) {
     //     // initialize return arrays
@@ -562,4 +573,3 @@ contract AuxiunNFTMulticall {
     //     }
     //     return (prices, timestamps, transactionType);
     // }
-}
