@@ -1,7 +1,6 @@
 const AuxiunNFTMulticall = artifacts.require("AuxiunNFTMulticall")
 const AuxiunNFT = artifacts.require("AuxiunNFT")
 const utils = require("./helpers/utils")
-const BigNumber = require('bignumber.js');  
 
 contract("AuxiunNFTMulticall", (accounts) => {
     let contractInstance;
@@ -10,9 +9,15 @@ contract("AuxiunNFTMulticall", (accounts) => {
 
     beforeEach(async () => {
         contractInstance = await AuxiunNFT.new()
+        await contractInstance.addAdminAddress(alice);
+
         multicall = await AuxiunNFTMulticall.new();
         multicall.setNFTContractAddress(contractInstance.address)
     })
+    afterEach(async () => {
+        await contractInstance.kill();
+    });
+
 
     /**
      *  Tests multiCallNFTsOnMarket() and  _fetchTokenIdsOnMarket()
@@ -24,19 +29,27 @@ contract("AuxiunNFTMulticall", (accounts) => {
         * 
      */
     it("should get NFT data if they are listed on the market ", async () => {
-        let gameId = "bsg_escape_from_tarkov";
-        let itemId = "btc";
+        const gameId_1 = "bsg_escape_from_tarkov";
+        const itemId_1 = "btc";
+        const gameId_2 = "bethesda_skyrim";
+        const itemId_2 = "daedric_sword";
         let baseURI = "https://auxiun-nft-market.com/";
         await contractInstance.setBaseURI(baseURI)
-        await contractInstance.addAdminAddress(alice);
-        await contractInstance.mint(alice, gameId, itemId, {from:alice});
-        const correctURI = await contractInstance.tokenURI(0);
+        await contractInstance.mint(alice, gameId_1, itemId_1, {from:alice});
 
-        // Alice lists her NFT
+        // Although this is minted, Alice will not list this NFT
+        await contractInstance.mint(alice, gameId_2, itemId_2, {from:alice});
+       
+        // Alice lists one of her NFTs (token 0)
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
+
+        const correctURI = await contractInstance.tokenURI(0);
 
         // Get token details
         const result = await multicall.multiCallNFTsOnMarket();
+
+        // Check that only 1 NFT is on the market:
+        assert.equal(result[0].length, 1)
 
         // Check details are correct
         assert.equal(result[0][0].toString(), '0')
@@ -48,10 +61,9 @@ contract("AuxiunNFTMulticall", (accounts) => {
     /**
      * Tests: multiCallNFTsOnMarket() and _removeNFTfromMarket() 
      */
-    it("token should be removed from the market after a successful purchase.", async () => {
+    it("should remove NFT from the market after a successful purchase.", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.addAdminAddress(alice);
         await contractInstance.mint(alice, gameId, itemId, {from:alice});
 
         // Alice lists her NFT
@@ -59,7 +71,6 @@ contract("AuxiunNFTMulticall", (accounts) => {
 
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:10, from: bob});
-
 
         // Token 0 should not be for sale now.
         // fetchNFTById() should set the price of the NFT to 0 and the seller to the zero address.
@@ -76,24 +87,33 @@ contract("AuxiunNFTMulticall", (accounts) => {
     })
 
    /** Tests: multiCallNFTsOnMarket(seller) */
-   it("should get token data by seller when they have listed items", async () => {
-        let gameId_1 = "bsg_escape_from_tarkov";
-        let itemId_1 = "btc";
-        let gameId_2 = "bethesda_skyrim";
-        let itemId_2 = "daedric_sword";
-        let baseURI = "https://auxiun-nft-market.com/";
+   it("should get NFT data by seller when they have listed them", async () => {
+        const gameId_1 = "bsg_escape_from_tarkov";
+        const itemId_1 = "btc";
+        const gameId_2 = "bethesda_skyrim";
+        const itemId_2 = "daedric_sword";
+        const gameId_3 = "valve_counter_strike_global_offensive";
+        const itemId_3 = "m4a4_howl";
+        const baseURI = "https://auxiun-nft-market.com/";
         await contractInstance.setBaseURI(baseURI)
-        await contractInstance.addAdminAddress(alice, {from: alice});
         await contractInstance.mint(alice, gameId_1, itemId_1, {from:alice});
         await contractInstance.mint(alice, gameId_2, itemId_2, {from:alice});
+
+        // Although Alice mints this item, this will not be listed
+        await contractInstance.mint(alice, gameId_3, itemId_3, {from:alice});
+
         await contractInstance.listNFTOnMarket(0, 10, {from: alice});
         await contractInstance.listNFTOnMarket(1, 20, {from: alice});
+
         const tokenURI_1 = await contractInstance.tokenURI(0)
         const tokenURI_2 = await contractInstance.tokenURI(1)
 
-
         const result = await multicall.multiCallNFTsOnMarket(alice)
         
+        // Check that the result returns two NFTs 
+        assert.equal(result[0].length, 2)
+
+        // Check the details are correct
         assert.equal(result[0][0].toString(), "0")
         assert.equal(result[0][1].toString(), "1")
         assert.equal(result[1][0], tokenURI_1)
@@ -103,10 +123,9 @@ contract("AuxiunNFTMulticall", (accounts) => {
     })
 
     /** Tests: multiCallNFTsOnMarket(seller) */
-    it("should not get any token data if a user has not listed any", async () => {
+    it("should not get any NFT data if a seller has not listed any on the market", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
-        await contractInstance.addAdminAddress(alice);
         await contractInstance.mint(alice, gameId, itemId, {from:alice});
 
         const result = await multicall.multiCallNFTsOnMarket(alice)
@@ -120,8 +139,7 @@ contract("AuxiunNFTMulticall", (accounts) => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         const price = 100;
-        await contractInstance.addAdminAddress(charlie);
-        await contractInstance.mint(charlie, gameId, itemId, {from:charlie});
+        await contractInstance.mint(charlie, gameId, itemId, {from:alice});
 
         // Charlie lists NFT
         await contractInstance.listNFTOnMarket(0, price, {from: charlie});
@@ -140,13 +158,12 @@ contract("AuxiunNFTMulticall", (accounts) => {
         assert.equal(result[5][0], false)
     })
 
-       /** Tests multiCallTransactionDataByUser() */
-       it("should get correct transaction data by user for buyer", async () => {
+    /** Tests multiCallTransactionDataByUser() */
+    it("should get correct transaction data by user for buyer", async () => {
         let gameId = "bsg_escape_from_tarkov";
         let itemId = "btc";
         const price = 100;
-        await contractInstance.addAdminAddress(charlie);
-        await contractInstance.mint(charlie, gameId, itemId, {from:charlie});
+        await contractInstance.mint(charlie, gameId, itemId, {from:alice});
 
         // Charlie lists NFT
         await contractInstance.listNFTOnMarket(0, price, {from: charlie});
@@ -169,7 +186,7 @@ contract("AuxiunNFTMulticall", (accounts) => {
     /**
      * Tests: multiCallNFTsOwnedByAddress()
      */
-    it("should get NFTs owned by a specific address", async () => {
+    it("should get NFTs owned by a specific address if they have NFTs", async () => {
 
         const gameId_1 = "bsg_escape_from_tarkov";
         const itemId_1 = "btc";
@@ -179,7 +196,6 @@ contract("AuxiunNFTMulticall", (accounts) => {
         const itemId_3 = "m4a4_howl";
         const baseURI = "https://auxiun-nft-market.com/";
         
-        await contractInstance.addAdminAddress(alice);
         await contractInstance.setBaseURI(baseURI, {from: alice})
         await contractInstance.mint(charlie, gameId_1, itemId_1, {from:alice});
         await contractInstance.mint(charlie, gameId_2, itemId_2, {from:alice});
@@ -197,6 +213,12 @@ contract("AuxiunNFTMulticall", (accounts) => {
         assert.equal(charlie_result[1][1], tokenURI_2)
         assert.equal(bob_result[0][0], "2")
         assert.equal(bob_result[1][0], tokenURI_3)
+    })
 
+      /**
+     * Tests: multiCallNFTsOwnedByAddress()
+     */
+    it("should not get any NFTs owned by a specific address if they do not have any", async () => {
+        await utils.throws(multicall.multiCallNFTsOwnedByAddress(charlie));
     })
 })

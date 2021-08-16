@@ -248,6 +248,8 @@ contract AuxiunNFTMulticall {
     * 2. array of tokenURIs of the respective tokenIds
     */
     function multiCallNFTsOwnedByAddress(address _address) external view returns(uint256[] memory, string[] memory) {
+        require(auxiunNFTContract.tokenIdCounter() > 0, "No NFTs exist");
+
         // initialize array lengths
         uint256[] memory tokenIds = new uint256[](auxiunNFTContract.balanceOf(_address));
         string[] memory tokenURIs = new string[](auxiunNFTContract.balanceOf(_address));
