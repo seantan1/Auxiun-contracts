@@ -174,7 +174,7 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
 
         // Get seller Id
         address seller = id_to_marketDetails[tokenId].seller;
-        
+
         // get price
         uint256 price = id_to_marketDetails[tokenId].price;
 
