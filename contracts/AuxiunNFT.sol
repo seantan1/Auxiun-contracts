@@ -252,8 +252,8 @@ contract AuxiunNFTMulticall {
         uint256[] memory tokenIds = new uint256[](auxiunNFTContract.balanceOf(_address));
         string[] memory tokenURIs = new string[](auxiunNFTContract.balanceOf(_address));
 
-        // since tokenId starts with 0, we need to +1 to the number
-        uint256 totalNumberOfNFTs = auxiunNFTContract.tokenIdCounter() + 1;
+        // since tokenIdCounter increments after each new mint we don't need to + 1
+        uint256 totalNumberOfNFTs = auxiunNFTContract.tokenIdCounter();
 
         uint256 counter = 0;
 

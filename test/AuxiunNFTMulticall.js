@@ -164,4 +164,39 @@ contract("AuxiunNFTMulticall", (accounts) => {
         // Don't need to assert equals for timestamp i.e result[4][0]
         assert.equal(result[5][0], true)
     })
+
+
+    /**
+     * Tests: multiCallNFTsOwnedByAddress()
+     */
+    it("should get NFTs owned by a specific address", async () => {
+
+        const gameId_1 = "bsg_escape_from_tarkov";
+        const itemId_1 = "btc";
+        const gameId_2 = "bethesda_skyrim";
+        const itemId_2 = "daedric_sword";
+        const gameId_3 = "valve_counter_strike_global_offensive";
+        const itemId_3 = "m4a4_howl";
+        const baseURI = "https://auxiun-nft-market.com/";
+        
+        await contractInstance.addAdminAddress(alice);
+        await contractInstance.setBaseURI(baseURI, {from: alice})
+        await contractInstance.mint(charlie, gameId_1, itemId_1, {from:alice});
+        await contractInstance.mint(charlie, gameId_2, itemId_2, {from:alice});
+        await contractInstance.mint(bob, gameId_3, itemId_3, {from:alice});
+        const tokenURI_1 = await contractInstance.tokenURI(0)
+        const tokenURI_2 = await contractInstance.tokenURI(1)
+        const tokenURI_3 = await contractInstance.tokenURI(2)
+
+        const charlie_result = await multicall.multiCallNFTsOwnedByAddress(charlie);
+        const bob_result = await multicall.multiCallNFTsOwnedByAddress(bob);
+
+        assert.equal(charlie_result[0][0], "0")
+        assert.equal(charlie_result[0][1], "1")
+        assert.equal(charlie_result[1][0], tokenURI_1)
+        assert.equal(charlie_result[1][1], tokenURI_2)
+        assert.equal(bob_result[0][0], "2")
+        assert.equal(bob_result[1][0], tokenURI_3)
+
+    })
 })
