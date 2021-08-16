@@ -154,7 +154,7 @@ contract("AuxiunNFTMulticall", (accounts) => {
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:price, from: bob});
 
-        const result = await multicall.multiCallTransactionDataByUser(charlie);
+        const result = await multicall.multiCallTransactionDataByUser(bob);
 
         //  tokenIds, buyers, sellers, prices, timestamps, transactionType
         assert.equal(result[0][0].toString(), '0')
