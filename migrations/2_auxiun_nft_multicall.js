@@ -1,5 +1,5 @@
-const AxiunNFTMulticall = artifacts.require("./AuxiunNFTMulticall.sol");
+const AuxiunNFTMulticall = artifacts.require("./AuxiunNFTMulticall");
 
 module.exports = function (deployer) {
-  deployer.deploy(AxiunNFTMulticall);
+  deployer.deploy(AuxiunNFTMulticall);
 };
