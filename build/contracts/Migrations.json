@@ -2129,7 +2129,8 @@
   },
   "networks": {},
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-08-17T03:49:37.453Z",
+  "updatedAt": "2021-08-17T03:52:21.726Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
