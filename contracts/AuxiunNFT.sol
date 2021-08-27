@@ -306,23 +306,25 @@ contract AuxiunNFTMulticall {
     // overloaded Multicall function to fetch NFTs listed on sale for a specific user's address
     function multiCallNFTsOnMarket(address seller) external view returns(uint256[] memory, string[] memory, uint256[] memory, address[] memory) {
         // initialize tokenIds' array length
-        uint256[] memory tokenIds = new uint256[](auxiunNFTContract.NFTsOnMarketByAddress(seller));
+        uint256[] memory tokenIdsOnMarket = new uint256[](auxiunNFTContract.NFTsOnMarket());
         // fetch the tokenIds on the market
-        tokenIds = _fetchTokenIdsOnMarket();
+        tokenIdsOnMarket = _fetchTokenIdsOnMarket();
 
-        // initialize array for tokenURIs, prices and sellers
+        // initialize array for tokenIdsSeller, tokenURIs, prices and sellers
+        uint256[] memory tokenIds = new uint256[](auxiunNFTContract.NFTsOnMarketByAddress(seller));
         string[] memory tokenURIs = new string[](auxiunNFTContract.NFTsOnMarketByAddress(seller));
         uint256[] memory tokenPrices = new uint256[](auxiunNFTContract.NFTsOnMarketByAddress(seller));
         address[] memory tokenSellers = new address[](auxiunNFTContract.NFTsOnMarketByAddress(seller));
 
-        // for loop to fetch all data of tokenIds and push into the 3 arrays
+        // for loop to fetch all data of tokenIdsOnMarket and push into the 3 arrays
         uint256 counter = 0;
         for (uint256 i = 0; i < auxiunNFTContract.NFTsOnMarket(); i++) {
             uint256 _price;
             address _seller;
-            (,_price, _seller) = auxiunNFTContract.id_to_marketDetails(tokenIds[i]);
+            (,_price, _seller) = auxiunNFTContract.id_to_marketDetails(tokenIdsOnMarket[i]);
             if (seller == _seller) {
-                tokenURIs[counter] = auxiunNFTContract.tokenURI(tokenIds[i]);
+                tokenIds[counter] = tokenIdsOnMarket[i];
+                tokenURIs[counter] = auxiunNFTContract.tokenURI(tokenIdsOnMarket[i]);
                 tokenPrices[counter] = _price;
                 tokenSellers[counter] = _seller;
                 counter++;
