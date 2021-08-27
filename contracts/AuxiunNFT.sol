@@ -334,9 +334,10 @@ contract AuxiunNFTMulticall {
   
 
     function multiCallTransactionDataByUser(address user) external view 
-    returns(uint256[] memory, address[] memory, address[] memory,
+    returns(uint256[] memory, string[] memory, address[] memory, address[] memory,
              uint256[] memory, uint256[] memory, bool[] memory) {
-        return (singleCallTransactionDataByUserTokenIds(user), 
+        return (singleCallTransactionDataByUserTokenIds(user),
+                singleCallTransactionDataByUserTokenURIs(user),
                 singleCallTransactionDataByUserBuyers(user), 
                 singleTransactionDataByUserSellers(user), 
                 singleCallTransactionDataByUserPrices(user), 
@@ -362,6 +363,25 @@ contract AuxiunNFTMulticall {
             }
         }
         return tokenIds;
+    }
+
+    function singleCallTransactionDataByUserTokenURIs(address user) internal view returns(string[] memory) {
+        // initialize return array
+        string[] memory tokenURIs = new string[](auxiunNFTContract.transactionHistoryCount(user));
+
+        // for loop to fetch all data of tokenIds and push into the arrays
+        uint256 counter = 0;
+        for (uint256 i = 0; i < auxiunNFTContract.getTransactionHistoryLength(); i++) {
+            uint256 _tokenId;
+            address _buyer;
+            address _seller;
+            (_tokenId, _buyer, _seller,,) = auxiunNFTContract.transactionHistory(i);
+            if (user == _buyer|| user == _seller) {
+                tokenURIs[counter] = auxiunNFTContract.tokenURI(_tokenId);
+                counter++;
+            }
+        }
+        return tokenURIs;
     }
 
     function singleCallTransactionDataByUserBuyers(address user) internal view returns(address[] memory) {
