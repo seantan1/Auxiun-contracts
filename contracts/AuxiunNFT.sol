@@ -93,11 +93,13 @@ contract AuxiunNFT is Ownable, ERC721, IERC721Receiver {
     }
 
     // functions to handle admins array
-    function addAdminAddress(address _address) external onlyOwner() {
+    function addAdminAddress(address _address) external {
+        require(admins[msg.sender], "Not authorized to call this function.");
         admins[_address] = true;
     }
 
-    function removeAdminAddress(address _address) external onlyOwner() {
+    function removeAdminAddress(address _address) external {
+        require(admins[msg.sender], "Not authorized to call this function.");
         admins[_address] = false;
     }
 
