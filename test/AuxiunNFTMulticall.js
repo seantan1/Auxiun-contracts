@@ -147,15 +147,20 @@ contract("AuxiunNFTMulticall", (accounts) => {
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:price, from: bob});
 
+        // Expected tokenURI
+        const expectedTokenURI = await contractInstance.tokenURI(0)
+
+        // Result
         const result = await multicall.multiCallTransactionDataByUser(charlie);
 
-        //  tokenIds, buyers, sellers, prices, timestamps, transactionType
+        //  tokenIds,tokenURIs, buyers, sellers, prices, timestamps, transactionType
         assert.equal(result[0][0].toString(), '0')
-        assert.equal(result[1][0].toString(), bob)
-        assert.equal(result[2][0].toString(), charlie)
-        assert.equal(result[3][0].toString(), price.toString())
-        // Don't need to assert equals for timestamp i.e result[4][0]
-        assert.equal(result[5][0], false)
+        assert.equal(result[1][0].toString(), expectedTokenURI)
+        assert.equal(result[2][0].toString(), bob)
+        assert.equal(result[3][0].toString(), charlie)
+        assert.equal(result[4][0].toString(), price.toString())
+        // Don't need to assert equals for timestamp i.e result[5][0]
+        assert.equal(result[6][0], false)
     })
 
     /** Tests multiCallTransactionDataByUser() */
@@ -171,15 +176,20 @@ contract("AuxiunNFTMulticall", (accounts) => {
         // Bob purchases NFT
         await contractInstance.purchaseNFT(0, {value:price, from: bob});
 
+        // Expected tokenURI
+        const expectedTokenURI = await contractInstance.tokenURI(0)
+
+        // Result
         const result = await multicall.multiCallTransactionDataByUser(bob);
 
         //  tokenIds, buyers, sellers, prices, timestamps, transactionType
         assert.equal(result[0][0].toString(), '0')
-        assert.equal(result[1][0].toString(), bob)
-        assert.equal(result[2][0].toString(), charlie)
-        assert.equal(result[3][0].toString(), price.toString())
-        // Don't need to assert equals for timestamp i.e result[4][0]
-        assert.equal(result[5][0], true)
+        assert.equal(result[1][0].toString(), expectedTokenURI)
+        assert.equal(result[2][0].toString(), bob)
+        assert.equal(result[3][0].toString(), charlie)
+        assert.equal(result[4][0].toString(), price.toString())
+        // Don't need to assert equals for timestamp i.e result[5][0]
+        assert.equal(result[6][0], true)
     })
 
 
