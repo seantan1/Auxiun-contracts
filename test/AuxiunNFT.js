@@ -30,10 +30,40 @@ contract("AuxiunNFT", (accounts) => {
 
     /** Tests addAdminAddress(), isAdminAddress */
 
-    it("should be able to add admins, if the sender is also the owner of the contract", async () => {
-        await contractInstance.addAdminAddress(alice);
-        const result = await contractInstance.isAdminAddress(alice);
+    it("should be able to add admins, if the sender is an admin", async () => {
+        await contractInstance.addAdminAddress(bob, {from: alice});
+        const result = await contractInstance.isAdminAddress(bob);
         assert.equal(result, true)
+    })
+
+    /** Tests addAdmin(), removeAdmin() */
+    it("should be able to remove an admin, if the sender is an admin", async () => {
+        await contractInstance.addAdminAddress(bob, {from: alice});
+        const resultBefore = await contractInstance.isAdminAddress(bob)
+        await contractInstance.removeAdminAddress(bob, {from: alice})
+        const resultAfter = await contractInstance.isAdminAddress(bob);
+        assert.equal(resultBefore, true)
+        assert.equal(resultAfter, false)
+    })
+
+    /** Tests addAdmin(), removeAdmin() */
+    it("should be not able to add admins, if the sender is not an admin", async () => {
+        await utils.throws(contractInstance.addAdminAddress(bob, {from: delta}))
+    })
+
+    /** Tests addAdmin(), removeAdmin() */
+    it("should be not able to remove an admin, if the sender is not an admin", async () => {
+        await contractInstance.addAdminAddress(bob, {from: alice});
+        await contractInstance.isAdminAddress(bob)
+        await utils.throws(contractInstance.removeAdminAddress(bob, {from: delta}))
+    })
+
+    /** Tests addAdmin(), removeAdmin() */
+    it("should do nothing if sender (admin) tries to remove someone who isn't an admin", async () => {
+        const resultBefore = await contractInstance.isAdminAddress(bob)
+        await contractInstance.removeAdminAddress(bob, {from: alice})
+        const resultAfter = await contractInstance.isAdminAddress(bob);
+        assert.equal(resultBefore, resultAfter)
     })
 
     
@@ -54,13 +84,7 @@ contract("AuxiunNFT", (accounts) => {
     })
 
 
-    /** Tests addAdmin(), removeAdmin() */
-    it("should remove an admin, if the sender is the owner", async () => {
-        await contractInstance.addAdminAddress(bob, {from: alice});
-        await contractInstance.removeAdminAddress(bob, {from: alice})
-        const result = await contractInstance.isAdminAddress(bob);
-        assert.equal(result, false)
-    })
+
 
     /* 
         TestsL tokenURI()
