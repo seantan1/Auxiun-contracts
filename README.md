@@ -12,3 +12,10 @@ How to use and setup a working truffle environment:
 9. `truffle migrate --network rinkeby` for example will deploy the contract on the rinkeby network
 
 Cheatsheet: https://eattheblocks.com/truffle-framework-cheatsheet/
+  
+## Setup after deploying contracts on blockchain
+1. As there are 2 contracts for the application (due to size limit restrictions), we have to manually link the 2 contracts together
+2. An easy way to do this is use a [simple React App](https://github.com/seantan1/smart-contracts-communicator) I have created to assist you with this
+3. Firstly, copy and paste the output contract addresses and ABIs into `src/contractData.js`
+4. Next, run `npm start` on the terminal within the directory
+5. Using the simple interface you can connect to your Metamask wallet and press the `Execute` button which contains the function to link the two contracts together
