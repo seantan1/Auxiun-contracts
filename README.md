@@ -19,3 +19,4 @@ Cheatsheet: https://eattheblocks.com/truffle-framework-cheatsheet/
 3. Firstly, copy and paste the output contract addresses and ABIs into `src/contractData.js`
 4. Next, run `npm start` on the terminal within the directory
 5. Using the simple interface you can connect to your Metamask wallet and press the `Execute` button which contains the function to link the two contracts together
+6. Ensure that the Metamask wallet you interact with the React App is the same wallet you used to deploy the contract, else you will have insufficient permissions to interact with the contract (only the owner can call the linking function)
